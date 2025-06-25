@@ -18,7 +18,7 @@ def test_get_openai_rules_success(mock_openai, monkeypatch):
     mock_client = mock_openai.return_value
     mock_client.chat.completions.create.return_value.choices[0].message.content = 'OpenAI rules'
 
-    rules = get_openai_rules('python', 'cursor', ['pytest'])
+    rules = get_openai_rules('python', 'cursor', 'pytest')
     assert rules == 'OpenAI rules'
 
 @patch('anthropic.Anthropic')
@@ -38,10 +38,9 @@ def test_validate_with_claude_no_key(monkeypatch):
 @patch('airules.cli.get_openai_rules', side_effect=RuntimeError('API Error'))
 def test_cli_main_openai_failure(mock_get_rules, monkeypatch, capsys):
     monkeypatch.setattr(sys, 'argv', ['airules', '--lang', 'python', '--tool', 'cursor', '--tags', 'pytest'])
-    with pytest.raises(SystemExit):
-        cli_main()
+    cli_main()
     captured = capsys.readouterr()
-    assert "[airules] ERROR: API Error" in captured.err
+    assert "[airules] ✗ ERROR processing tag 'pytest': API Error" in captured.err
 
 def test_dry_run(tmp_path):
     # Simulate writing rules file with dry-run
@@ -67,16 +66,16 @@ def test_overwrite_prompt_no(monkeypatch, tmp_path):
     assert test_file.read_text() == 'OLD'
 
 def test_get_rules_filepath(tmp_path):
-    # Test that the new file path logic works correctly
+    # Test that the new file path logic works correctly for various tags
     test_cases = {
-        ('cursor', 'python', ('fastapi',)): tmp_path / '.cursor' / 'python_fastapi.mdc',
-        ('roo', 'javascript', ('react',)): tmp_path / '.roo' / 'javascript_react.md',
-        ('claude', 'go', ('gin',)): tmp_path / 'CLAUDE.md', # Claude is a special case
-        ('other', 'rust', ()): tmp_path / 'other' / 'rust_general.md',
+        ('cursor', 'python', 'fastapi'): tmp_path / '.cursor' / 'python_fastapi.mdc',
+        ('roo', 'javascript', 'react'): tmp_path / '.roo' / 'javascript_react.md',
+        ('claude', 'go', 'gin'): tmp_path / 'CLAUDE.md', # Claude is a special case
+        ('other', 'rust', 'coding style'): tmp_path / 'other' / 'rust_coding_style.md',
     }
     from airules.cli import get_rules_filepath
-    for (tool, lang, tags), expected_path in test_cases.items():
-        filepath = get_rules_filepath(tool, lang, tags, str(tmp_path))
+    for (tool, lang, tag), expected_path in test_cases.items():
+        filepath = get_rules_filepath(tool, lang, tag, str(tmp_path))
         assert filepath == str(expected_path)
 
 def test_clean_rules_content():
@@ -98,14 +97,31 @@ def test_venv_check_not_in_venv(monkeypatch):
     assert in_virtualenv() is False
 
 @patch('airules.cli.write_rules_file')
-@patch('airules.cli.get_rules_filepath', return_value='/fake/path.md')
-@patch('airules.cli.validate_with_claude', side_effect=lambda rules: rules)
+@patch('airules.cli.get_rules_filepath')
+@patch('airules.cli.clean_rules_content', side_effect=lambda x: x)
+@patch('airules.cli.validate_with_claude', side_effect=lambda x: x)
 @patch('airules.cli.get_openai_rules', return_value="RULES")
-def test_cli_main(mock_get_openai, mock_validate_claude, mock_get_path, mock_write_rules, monkeypatch):
-    # Test the main CLI function with mock arguments
-    monkeypatch.setattr(sys, 'argv', ['airules', '--lang', 'python', '--tool', 'cursor', '--tags', 'pytest'])
+def test_cli_main_multiple_tags(mock_get_rules, mock_validate, mock_clean, mock_get_path, mock_write, monkeypatch):
+    # Test that the CLI processes multiple tags correctly
+    tags = "fastapi,pytest"
+    monkeypatch.setattr(sys, 'argv', ['airules', '--lang', 'python', '--tool', 'cursor', '--tags', tags])
+
+    # Make get_rules_filepath return a different path for each tag
+    mock_get_path.side_effect = lambda tool, lang, tag, path: f"/{tag}.md"
+
     cli_main()
-    mock_write_rules.assert_called_once()
+
+    # Check that functions were called for each tag
+    assert mock_get_rules.call_count == 2
+    assert mock_write.call_count == 2
+
+    # Check that get_openai_rules was called with the correct tags
+    mock_get_rules.assert_any_call('python', 'cursor', 'fastapi')
+    mock_get_rules.assert_any_call('python', 'cursor', 'pytest')
+
+    # Check that write_rules_file was called with the correct paths
+    mock_write.assert_any_call('/fastapi.md', "RULES", False, False)
+    mock_write.assert_any_call('/pytest.md', "RULES", False, False)
 
 def test_cli_help():
     result = subprocess.run([sys.executable, '-m', 'airules.cli', '--help'], capture_output=True, text=True)

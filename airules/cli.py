@@ -12,15 +12,17 @@ class Spinner:
         self.message = message
         self.stop_running = threading.Event()
         self.spinner_thread = threading.Thread(target=self._spin)
+        self.GREEN = '\033[92m'
+        self.ENDC = '\033[0m'
 
     def _spin(self):
-        spinner_chars = "|/-\\"
+        spinner_chars = "✨💫✨"
         i = 0
         while not self.stop_running.is_set():
             char = spinner_chars[i % len(spinner_chars)]
-            sys.stdout.write(f'\r{self.message} {char}')
+            sys.stdout.write(f'\r{self.GREEN}{self.message} {char}{self.ENDC}')
             sys.stdout.flush()
-            time.sleep(0.1)
+            time.sleep(0.15)
             i += 1
 
     def __enter__(self):
@@ -30,7 +32,7 @@ class Spinner:
     def __exit__(self, exc_type, exc_value, traceback):
         self.stop_running.set()
         self.spinner_thread.join()
-        sys.stdout.write(f'\r{" " * (len(self.message) + 2)}\r')
+        sys.stdout.write(f'\r{" " * (len(self.message) + 5)}\r')
         sys.stdout.flush()
 
 def clean_rules_content(content: str) -> str:
@@ -45,9 +47,9 @@ def clean_rules_content(content: str) -> str:
         return cleaned_content.strip()
     return content
 
-def get_openai_rules(lang, tool, tags):
+def get_openai_rules(lang, tool, tag):
     """
-    Query OpenAI API for best practices for the given language, tool, and tags.
+    Query OpenAI API for best practices for the given language, tool, and tag.
     Returns a string with the recommended rules/content.
     """
     client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
@@ -55,18 +57,10 @@ def get_openai_rules(lang, tool, tags):
         raise ValueError("OPENAI_API_KEY environment variable not set.")
 
     today_str = datetime.now().strftime("%B %d, %Y")
-    framework = tags[0] if tags else 'none'
-    other_tags = tags[1:]
 
     prompt = (
-        f"Generate a set of technical, best-practice guidelines for an AI coding assistant working on a '{lang}' project. "
-        f"The project's main framework is '{framework}'.\n"
-    )
-    if other_tags:
-        prompt += f"It also uses these technologies: {', '.join(other_tags)}.\n"
-
-    prompt += (
-        f"\nThe guidelines MUST focus exclusively on code style, patterns, library usage, and conventions specific to '{lang}' and '{framework}'. "
+        f"Generate a set of technical, best-practice guidelines for an AI coding assistant. "
+        f"The guidelines are for a '{lang}' project, focusing specifically on the topic of '{tag}'.\n"
         f"The output should be a markdown file ready for the '{tool}' tool.\n"
         f"IMPORTANT: Do NOT include any ethical guidelines, safety warnings, or self-referential statements about being an AI. "
         f"Provide only the raw, technical rules content, valid as of {today_str}."
@@ -114,12 +108,13 @@ def validate_with_claude(rules):
         print(f"[airules] WARNING: Could not validate with Claude: {e}", file=sys.stderr)
         return rules # Return original rules if validation fails
 
-def get_rules_filepath(tool, lang, tags, project_path):
+def get_rules_filepath(tool, lang, tag, project_path):
     """
-    Determines the correct file path for the rules file based on the tool, language, and framework.
+    Determines the correct file path for the rules file based on the tool, language, and tag.
     """
-    framework = tags[0] if tags else 'general'
-    filename_base = f"{lang.lower()}_{framework.lower()}"
+    # Sanitize the tag for the filename
+    safe_tag = tag.lower().replace(' ', '_').replace('-', '_')
+    filename_base = f"{lang.lower()}_{safe_tag}"
 
     if tool == 'cursor':
         dir_path = os.path.join(project_path, '.cursor')
@@ -164,30 +159,31 @@ def main():
     parser = argparse.ArgumentParser(description="Configure AI rules files for your project using latest best practices.")
     parser.add_argument('--lang', type=str, required=True, help='Programming language (e.g., python, javascript)')
     parser.add_argument('--tool', type=str, required=True, help='Which rules file/tool to configure (e.g., cursor, roo, claude)')
-    parser.add_argument('--tags', type=str, required=True, help='Comma-separated list of frameworks/libraries (e.g., fastapi,pytest)')
+    parser.add_argument('--tags', type=str, required=True, help='Comma-separated list of topics/frameworks (e.g., "fastapi,coding style,pytest")')
     parser.add_argument('--dry-run', action='store_true', help='Preview changes without writing files')
     parser.add_argument('--yes', '-y', action='store_true', help='Overwrite files without prompting')
     parser.add_argument('--project-path', type=str, default='.', help='Target project directory (default: current)')
     args = parser.parse_args()
 
     tags = [t.strip() for t in args.tags.split(',') if t.strip()]
-    try:
-        with Spinner(f"[airules] Querying OpenAI for '{args.lang}/{','.join(tags)}' rules..."):
-            rules_content = get_openai_rules(args.lang, args.tool, tags)
-        print(f"[airules] OpenAI query complete.")
 
-        if os.environ.get("ANTHROPIC_API_KEY"):
-            with Spinner("[airules] Validating rules with Anthropic Claude..."):
-                rules_content = validate_with_claude(rules_content)
-            print("[airules] Claude validation complete.")
+    for tag in tags:
+        try:
+            with Spinner(f"[airules] Generating rules for '{tag}'..."):
+                rules_content = get_openai_rules(args.lang, args.tool, tag)
 
-    except (ValueError, RuntimeError) as e:
-        print(f"\n[airules] ERROR: {e}", file=sys.stderr)
-        sys.exit(1)
+                if os.environ.get("ANTHROPIC_API_KEY"):
+                    rules_content = validate_with_claude(rules_content)
 
-    rules_content = clean_rules_content(rules_content)
-    filepath = get_rules_filepath(args.tool, args.lang, tags, args.project_path)
-    write_rules_file(filepath, rules_content, args.dry_run, args.yes)
+            print(f"[airules] ✓ Rules for '{tag}' generated.")
+
+            rules_content = clean_rules_content(rules_content)
+            filepath = get_rules_filepath(args.tool, args.lang, tag, args.project_path)
+            write_rules_file(filepath, rules_content, args.dry_run, args.yes)
+
+        except (ValueError, RuntimeError) as e:
+            print(f"\n[airules] ✗ ERROR processing tag '{tag}': {e}", file=sys.stderr)
+            continue
 
 if __name__ == '__main__':
     main()
