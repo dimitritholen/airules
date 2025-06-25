@@ -2,7 +2,7 @@ from textual.app import App, ComposeResult
 from textual.widgets import Header, Footer, Static, Button, Input
 from textual.containers import Container
 
-from .config import get_config, CONFIG_FILENAME
+from .config import get_config, write_config, get_config_path, CONFIG_FILENAME
 
 class ConfigTUI(App):
     """A Textual app to manage .airulesrc configuration."""
@@ -22,15 +22,18 @@ class ConfigTUI(App):
             config = get_config()
             container = self.query_one("#main-container")
 
-            container.mount(Static(f"[b]Configuration loaded from:[/b] {CONFIG_FILENAME}\n"))
+            config_path = get_config_path()
+            container.mount(Static(f"[b]Configuration loaded from:[/b] {config_path}\n"))
 
             for section, options in config.items():
                 container.mount(Static(f"[bold cyan][{section}][/bold cyan]"))
                 for key, value in options.items():
-                                        input_widget = Input(value, id=f"{section}_{key}")
                     container.mount(Static(f"  [b]{key}:[/b]"))
+                    input_widget = Input(value, id=f"{section}_{key}")
                     container.mount(input_widget)
-                container.mount(Static("\n")) # Add a blank line for spacing
+                container.mount(Static("\n"))
+            
+            container.mount(Button("Save", variant="primary", id="save"))
 
         except FileNotFoundError:
             self.query_one("#main-container").mount(
@@ -39,8 +42,6 @@ class ConfigTUI(App):
             self.query_one("#main-container").mount(
                 Static("Please run [b]airules init[/b] to create one.")
             )
-
-            container.mount(Button("Save", variant="primary", id="save"))
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "save":
@@ -51,12 +52,11 @@ class ConfigTUI(App):
                         input_widget = self.query_one(f"#{section}_{key}", Input)
                         config.set(section, key, input_widget.value)
                 
-                from .config import write_config
                 write_config(config)
-                self.mount(Static("[bold green]Configuration saved![/bold green]"))
+                self.query_one("#main-container").mount(Static("\n[bold green]✓ Configuration saved![/bold green]"))
 
             except Exception as e:
-                self.mount(Static(f"[bold red]Error saving config: {e}[/bold red]"))
+                self.query_one("#main-container").mount(Static(f"\n[bold red]✗ Error saving config: {e}[/bold red]"))
 
 if __name__ == "__main__":
     app = ConfigTUI()

@@ -6,3 +6,4 @@ anthropic
 typer[all]
 rich
 textual
+trio
