@@ -11,17 +11,21 @@ A universal CLI utility to configure AI rules files (e.g., .roo/rules, CLAUDE.md
 - Simple one-command install (packaged for PyPI)
 - Designed for future MCP integration
 
-## Usage
+## Quickstart
 
 ```bash
-# Basic usage (auto-detects project context if possible)
-airules
+# Create and activate a virtual environment (required)
+python3 -m venv .venv
+source .venv/bin/activate
 
-# Specify language, tool, and tags explicitly
-airules --lang python --tool cursor --tags langgraph,langchain,pytest
+# Install dependencies
+pip install -r requirements.txt
 
-# Preview changes without writing files
-airules --lang python --tool cursor --tags pytest --dry-run
+# Run the CLI (auto-detects project context if possible)
+python -m airules.cli --lang python --tool cursor --tags langgraph,langchain,pytest
+
+# Run tests
+make test
 ```
 
 ## Options
@@ -36,6 +40,7 @@ airules --lang python --tool cursor --tags pytest --dry-run
 - Code files are kept short and simple
 - Tests and >85% coverage are required
 - All lint and security issues must be fixed
+- ALWAYS use a virtual environment for all development and usage
 
 ---
 
