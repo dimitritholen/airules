@@ -25,26 +25,50 @@ class Spinner:
         self.message = message
         self.stop_running = threading.Event()
         self.spinner_thread = threading.Thread(target=self._spin)
+        # Ensure the thread is marked as daemon so it doesn't block program exit
+        self.spinner_thread.daemon = True
+        # ANSI color and formatting codes
         self.GREEN = '\033[92m'
         self.ENDC = '\033[0m'
+        # Calculate message display length for better cleanup
+        self.display_len = len(message) + 15
 
     def _spin(self):
-        spinner_chars = "✨💫✨"
         i = 0
+        # Save cursor position at start
+        sys.stdout.write('\033[s')
+        sys.stdout.flush()
+        
         while not self.stop_running.is_set():
-            char = spinner_chars[i % len(spinner_chars)]
-            console.print(f'\r{self.GREEN}{self.message} {char}{self.ENDC}', end="")
-            time.sleep(0.15)
+            # Create the animated dots (1 to 3 dots)
+            dots = '.' * (i % 3 + 1)
+            # Restore cursor to saved position
+            sys.stdout.write('\033[u')
+            # Clear line
+            sys.stdout.write('\033[K')
+            # Write the new spinner state
+            sys.stdout.write(f"{self.GREEN}{self.message} \u2728{dots}{self.ENDC}")
+            sys.stdout.flush()
+            
+            time.sleep(0.3)
             i += 1
 
     def __enter__(self):
+        # Clear any existing output on the line
+        sys.stdout.write('\r\033[K')
+        sys.stdout.flush()
+        # Start the spinner thread
         self.spinner_thread.start()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.stop_running.set()
         self.spinner_thread.join()
-        console.print(f'\r{" " * (len(self.message) + 5)}\r', end="")
+        # Restore cursor and clear the spinner line completely
+        sys.stdout.write('\033[u\033[K\r')
+        sys.stdout.flush()
+        # Brief pause to ensure cleanup completes
+        time.sleep(0.05)
 
 
 def clean_rules_content(content: str) -> str:
