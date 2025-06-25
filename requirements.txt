@@ -1,3 +1,5 @@
 pytest
 pytest-cov
 requests
+openai
+anthropic
