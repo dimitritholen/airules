@@ -3,3 +3,6 @@ pytest-cov
 requests
 openai
 anthropic
+typer[all]
+rich
+textual

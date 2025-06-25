@@ -1,0 +1,9 @@
+#main-container {
+    padding: 1 2;
+    layout: vertical;
+    overflow-y: auto;
+}
+
+Static {
+    margin-bottom: 1;
+}
