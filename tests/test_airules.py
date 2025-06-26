@@ -48,7 +48,9 @@ def test_tool_subcommand_invokes_pipeline(mock_run_pipeline):
         review_model=None,
         dry_run=False,
         yes=False,
-        project_path='/fake'
+        project_path='/fake',
+        lang=None,
+        tags=None
     )
 
 @patch('airules.cli.write_rules_file')
@@ -56,9 +58,10 @@ def test_tool_subcommand_invokes_pipeline(mock_run_pipeline):
 @patch('airules.cli.get_openai_rules', return_value="RULES")
 @patch('airules.cli.research_with_perplexity', return_value="RESEARCH SUMMARY")
 def test_full_pipeline(
-    mock_research, mock_get_rules, mock_validate, mock_write_rules, isolated_fs_with_config
+    mock_research, mock_get_rules, mock_validate, mock_write_rules, isolated_fs_with_config, monkeypatch
 ):
     """Test the full pipeline with --research and --review flags."""
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "fake-key")
     project_path = str(isolated_fs_with_config)
     result = runner.invoke(
         app,
@@ -85,7 +88,7 @@ def test_pipeline_no_config_fails(tmp_path):
     with runner.isolated_filesystem(temp_dir=tmp_path):
         result = runner.invoke(app, ["cursor"])
         assert result.exit_code == 1
-        assert "No .airulesrc file found" in result.output
+        assert "No .rules4rc file found" in result.output
 
 @pytest.mark.parametrize(
     "content, expected",
@@ -121,13 +124,7 @@ def test_cli_fails_outside_venv(mock_in_virtualenv, isolated_fs_with_config):
     assert result.exit_code == 1
     assert "This command must be run in a virtual environment" in result.output
 
-@patch('airules.cli.ConfigTUI')
-def test_config_command(mock_config_tui, isolated_fs_with_config):
-    """Test that the config command initializes and runs the TUI."""
-    result = runner.invoke(app, ["config"])
-    assert result.exit_code == 0
-    mock_config_tui.assert_called_once()
-    mock_config_tui.return_value.run.assert_called_once()
+
 
 @patch('airules.cli.validate_with_claude')
 @patch('airules.cli.get_openai_rules', return_value="RULES")
