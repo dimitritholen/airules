@@ -225,7 +225,7 @@ def write_rules_file(filepath: Path, content: str, dry_run: bool, yes: bool, too
 
 @app.command()
 def init():
-    """Initializes a default .airulesrc file in the current directory."""
+    """Initializes a default .rules4rc file in the current directory."""
     if not in_virtualenv():
         console.print("[bold red]✗ This command must be run in a virtual environment.[/bold red]")
         raise typer.Exit(code=1)
@@ -321,7 +321,7 @@ def generate(
     yes: bool = typer.Option(False, "-y", "--yes", help="Overwrite files without prompting."),
     project_path: str = typer.Option(".", help="Target project directory.")
 ):
-    """Generate rules for all tools configured in .airulesrc."""
+    """Generate rules for all tools configured in .rules4rc."""
     if not in_virtualenv():
         console.print("[bold red]✗ This command must be run in a virtual environment.[/bold red]")
         raise typer.Exit(code=1)
