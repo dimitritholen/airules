@@ -18,7 +18,7 @@ def mock_venv_check(monkeypatch):
 
 @pytest.fixture
 def isolated_fs_with_config(tmp_path):
-    """Provides an isolated filesystem with a default .airulesrc file with a single tag."""
+    """Provides an isolated filesystem with a default .rules4rc file with a single tag."""
     with runner.isolated_filesystem(temp_dir=tmp_path) as td:
         runner.invoke(app, ["init"], catch_exceptions=False)
 

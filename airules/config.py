@@ -1,7 +1,7 @@
 import configparser
 from pathlib import Path
 
-CONFIG_FILENAME = ".airulesrc"
+CONFIG_FILENAME = ".rules4rc"
 
 
 def get_config_path() -> Path:
@@ -10,7 +10,7 @@ def get_config_path() -> Path:
 
 
 def get_config() -> configparser.ConfigParser:
-    """Reads the .airulesrc configuration file."""
+    """Reads the .rules4rc configuration file."""
     config_path = get_config_path()
     if not config_path.exists():
         raise FileNotFoundError(
@@ -23,7 +23,7 @@ def get_config() -> configparser.ConfigParser:
 
 
 def create_default_config():
-    """Creates a default .airulesrc file."""
+    """Creates a default .rules4rc file."""
     config = configparser.ConfigParser()
     config["settings"] = {
         "language": "python",
@@ -34,6 +34,6 @@ def create_default_config():
 
 
 def write_config(config: configparser.ConfigParser):
-    """Writes the configuration to the .airulesrc file."""
+    """Writes the configuration to the .rules4rc file."""
     with open(get_config_path(), "w") as configfile:
         config.write(configfile)

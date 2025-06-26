@@ -19,7 +19,7 @@ def mock_venv_check(monkeypatch):
 @pytest.fixture
 def isolated_fs_with_config(tmp_path):
     """
-    Provides an isolated filesystem with a default .airulesrc file,
+    Provides an isolated filesystem with a default .rules4rc file,
     modified to contain only a single tag to simplify overwrite tests.
     """
     with runner.isolated_filesystem(temp_dir=tmp_path) as td:
