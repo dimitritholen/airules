@@ -2,6 +2,8 @@
 
 A universal CLI utility to configure AI rules files (e.g., .roo/rules, CLAUDE.md, .cursor/rules) for any project, based on the latest industry best practices via live Perplexity research.
 
+![rules4.png](rules4.png)
+
 ## Features
 
 - Supports any language or framework via `--lang` and `--tags` options
@@ -303,6 +305,7 @@ rules4 claude --primary claude-3-opus-20240229 --review claude-3-5-sonnet-202410
 ```
 
 These commands demonstrate the flexibility:
+
 - You can use any combination of OpenAI and Anthropic models
 - The same model can be used for both primary generation and review
 - Research always uses Perplexity's `sonar-pro` model
