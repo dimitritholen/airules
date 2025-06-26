@@ -1,6 +1,6 @@
 import configparser
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 from typer.testing import CliRunner
@@ -13,7 +13,7 @@ runner = CliRunner()
 
 @pytest.fixture(autouse=True)
 def mock_venv_check(monkeypatch):
-    monkeypatch.setattr("airules.cli.in_virtualenv", lambda: True)
+    monkeypatch.setattr("airules.services.in_virtualenv", lambda: True)
 
 
 @pytest.fixture
@@ -33,9 +33,14 @@ def isolated_fs_with_config(tmp_path):
         yield Path(td)
 
 
-@patch("airules.cli.generate_rules", return_value="Generated Rules")
-def test_claude_file_creation_and_append(mock_get_rules, isolated_fs_with_config):
+@patch("airules.api_clients.AIClientFactory.get_client")
+def test_claude_file_creation_and_append(mock_get_client, isolated_fs_with_config):
     """Test that 'airules claude' creates and appends to CLAUDE.md."""
+    # Mock the API client
+    mock_client = Mock()
+    mock_client.generate_completion.side_effect = ["Generated Rules", "More Rules"]
+    mock_get_client.return_value = mock_client
+
     project_path = isolated_fs_with_config
     # First run creates the file
     result1 = runner.invoke(
@@ -48,7 +53,6 @@ def test_claude_file_creation_and_append(mock_get_rules, isolated_fs_with_config
     assert "---" not in claude_md_path.read_text()  # No separator on first write
 
     # Second run appends to the file
-    mock_get_rules.return_value = "More Rules"
     result2 = runner.invoke(
         app, ["claude", "--project-path", str(project_path)], catch_exceptions=False
     )
@@ -59,9 +63,14 @@ def test_claude_file_creation_and_append(mock_get_rules, isolated_fs_with_config
     assert "---" in final_content  # Separator should now exist
 
 
-@patch("airules.cli.generate_rules", return_value="Generated Rules")
-def test_cursor_file_creation(mock_get_rules, isolated_fs_with_config):
+@patch("airules.api_clients.AIClientFactory.get_client")
+def test_cursor_file_creation(mock_get_client, isolated_fs_with_config):
     """Test that 'airules cursor' creates .cursor/rules/ with a .mdc file."""
+    # Mock the API client
+    mock_client = Mock()
+    mock_client.generate_completion.return_value = "Generated Rules"
+    mock_get_client.return_value = mock_client
+
     project_path = isolated_fs_with_config
     result = runner.invoke(
         app, ["cursor", "--project-path", str(project_path)], catch_exceptions=False
@@ -72,9 +81,14 @@ def test_cursor_file_creation(mock_get_rules, isolated_fs_with_config):
     assert cursor_file_path.read_text() == "Generated Rules"
 
 
-@patch("airules.cli.generate_rules", return_value="Generated Rules")
-def test_cline_file_creation(mock_get_rules, isolated_fs_with_config):
+@patch("airules.api_clients.AIClientFactory.get_client")
+def test_cline_file_creation(mock_get_client, isolated_fs_with_config):
     """Test that 'airules cline' creates .cline/rules/ with a .md file."""
+    # Mock the API client
+    mock_client = Mock()
+    mock_client.generate_completion.return_value = "Generated Rules"
+    mock_get_client.return_value = mock_client
+
     project_path = isolated_fs_with_config
     result = runner.invoke(
         app, ["cline", "--project-path", str(project_path)], catch_exceptions=False
@@ -85,9 +99,14 @@ def test_cline_file_creation(mock_get_rules, isolated_fs_with_config):
     assert cline_file_path.read_text() == "Generated Rules"
 
 
-@patch("airules.cli.generate_rules", return_value="Generated Rules")
-def test_roo_file_creation(mock_get_rules, isolated_fs_with_config):
+@patch("airules.api_clients.AIClientFactory.get_client")
+def test_roo_file_creation(mock_get_client, isolated_fs_with_config):
     """Test that 'airules roo' creates .roo/rules/ with a .md file."""
+    # Mock the API client
+    mock_client = Mock()
+    mock_client.generate_completion.return_value = "Generated Rules"
+    mock_get_client.return_value = mock_client
+
     project_path = isolated_fs_with_config
     result = runner.invoke(
         app, ["roo", "--project-path", str(project_path)], catch_exceptions=False
@@ -98,9 +117,14 @@ def test_roo_file_creation(mock_get_rules, isolated_fs_with_config):
     assert roo_file_path.read_text() == "Generated Rules"
 
 
-@patch("airules.cli.generate_rules", return_value="Generated Rules")
-def test_copilot_file_creation(mock_get_rules, isolated_fs_with_config):
+@patch("airules.api_clients.AIClientFactory.get_client")
+def test_copilot_file_creation(mock_get_client, isolated_fs_with_config):
     """Test that 'airules copilot' creates .github/copilot-python-security.md."""
+    # Mock the API client
+    mock_client = Mock()
+    mock_client.generate_completion.return_value = "Generated Rules"
+    mock_get_client.return_value = mock_client
+
     project_path = isolated_fs_with_config
     result = runner.invoke(
         app, ["copilot", "--project-path", str(project_path)], catch_exceptions=False

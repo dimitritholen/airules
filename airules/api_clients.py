@@ -2,8 +2,7 @@
 
 import os
 from abc import ABC, abstractmethod
-from datetime import datetime
-from typing import Optional, Protocol
+from typing import Dict, Protocol
 
 import anthropic
 import openai
@@ -14,7 +13,7 @@ from .models import get_provider_for_model
 
 class AIClientProtocol(Protocol):
     """Protocol for AI client implementations."""
-    
+
     def generate_completion(self, prompt: str, model: str) -> str:
         """Generate completion using the AI model."""
         ...
@@ -22,15 +21,15 @@ class AIClientProtocol(Protocol):
 
 class BaseAIClient(ABC):
     """Base class for AI clients."""
-    
+
     def __init__(self, api_key: str):
         self.api_key = api_key
-    
+
     @abstractmethod
     def generate_completion(self, prompt: str, model: str) -> str:
         """Generate completion using the AI model."""
         pass
-    
+
     def _validate_api_key(self) -> None:
         """Validate that API key is present."""
         if not self.api_key:
@@ -39,12 +38,12 @@ class BaseAIClient(ABC):
 
 class OpenAIClient(BaseAIClient):
     """OpenAI API client."""
-    
+
     def __init__(self, api_key: str):
         super().__init__(api_key)
         self._validate_api_key()
         self.client = openai.OpenAI(api_key=api_key)
-    
+
     def generate_completion(self, prompt: str, model: str) -> str:
         """Generate completion using OpenAI API."""
         try:
@@ -65,17 +64,17 @@ class OpenAIClient(BaseAIClient):
 
 class AnthropicClient(BaseAIClient):
     """Anthropic API client."""
-    
+
     def __init__(self, api_key: str):
         super().__init__(api_key)
         self._validate_api_key()
         self.client = anthropic.Anthropic(api_key=api_key)
-    
+
     def generate_completion(self, prompt: str, model: str) -> str:
         """Generate completion using Anthropic API."""
         try:
             system_prompt = "You are an expert in generating rules for AI coding assistants. Your output must be only the raw markdown content for the rules file."
-            
+
             response = self.client.messages.create(
                 model=model,
                 max_tokens=4096,
@@ -93,12 +92,14 @@ class AnthropicClient(BaseAIClient):
 
 class PerplexityClient(BaseAIClient):
     """Perplexity API client for research."""
-    
+
     def __init__(self, api_key: str):
         super().__init__(api_key)
         self._validate_api_key()
-        self.client = openai.OpenAI(api_key=api_key, base_url="https://api.perplexity.ai")
-    
+        self.client = openai.OpenAI(
+            api_key=api_key, base_url="https://api.perplexity.ai"
+        )
+
     def generate_completion(self, prompt: str, model: str = "sonar-pro") -> str:
         """Generate completion using Perplexity API."""
         try:
@@ -119,54 +120,62 @@ class PerplexityClient(BaseAIClient):
 
 class AIClientFactory:
     """Factory for creating AI clients."""
-    
-    _client_cache: dict[str, BaseAIClient] = {}
-    
+
+    _client_cache: Dict[str, BaseAIClient] = {}
+
     @classmethod
     def get_client(cls, model: str) -> BaseAIClient:
         """Get the appropriate client for a model."""
         provider = get_provider_for_model(model)
-        
+
         if not provider:
             raise APIError(f"Unknown model: {model}")
-        
+
         # Check cache first
         if provider in cls._client_cache:
             return cls._client_cache[provider]
-        
+
         # Create new client
         client = cls._create_client(provider)
         cls._client_cache[provider] = client
         return client
-    
+
     @classmethod
     def _create_client(cls, provider: str) -> BaseAIClient:
         """Create a client for the specified provider."""
         if provider == "openai":
             api_key = os.environ.get("OPENAI_API_KEY")
             if not api_key:
-                raise APIError("Missing OpenAI API Key. Set OPENAI_API_KEY environment variable.")
+                raise APIError(
+                    "Missing OpenAI API Key. Set OPENAI_API_KEY environment variable."
+                )
             return OpenAIClient(api_key)
-        
+
         elif provider == "anthropic":
             api_key = os.environ.get("ANTHROPIC_API_KEY")
             if not api_key:
-                raise APIError("Missing Anthropic API Key. Set ANTHROPIC_API_KEY environment variable.")
+                raise APIError(
+                    "Missing Anthropic API Key. Set ANTHROPIC_API_KEY environment variable."
+                )
             return AnthropicClient(api_key)
-        
+
         elif provider == "perplexity":
             api_key = os.environ.get("PERPLEXITY_API_KEY")
             if not api_key:
-                raise APIError("Missing Perplexity API Key. Set PERPLEXITY_API_KEY environment variable.")
+                raise APIError(
+                    "Missing Perplexity API Key. Set PERPLEXITY_API_KEY environment variable."
+                )
             return PerplexityClient(api_key)
-        
+
         else:
             raise APIError(f"Unsupported provider: {provider}")
-    
+
     @classmethod
     def get_research_client(cls) -> PerplexityClient:
         """Get Perplexity client for research."""
         api_key = os.environ.get("PERPLEXITY_API_KEY")
         if not api_key:
-            raise APIError("Missing Perplexity API Key. Set PERPLEXITY_API_KEY environment variable.")
+            raise APIError(
+                "Missing Perplexity API Key. Set PERPLEXITY_API_KEY environment variable."
+            )
         return PerplexityClient(api_key)

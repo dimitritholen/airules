@@ -45,4 +45,7 @@ def test_main_not_in_venv_exits_and_prints_error(mock_in_venv, capsys):
     assert e.type == SystemExit
     assert e.value.code == 1
     captured = capsys.readouterr()
-    assert "[airules] ERROR: Please activate a virtual environment" in captured.out
+    assert (
+        "[airules] ERROR: This command must be run in a virtual environment"
+        in captured.out
+    )
