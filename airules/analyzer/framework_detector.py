@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from .package_parser import PackageInfo, PackageParser
 
@@ -976,7 +976,7 @@ class FrameworkDetector:
 
         return {k: v for k, v in suggestions.items() if v}
 
-    def analyze_compatibility(self, frameworks: List[FrameworkInfo]) -> Dict[str, any]:
+    def analyze_compatibility(self, frameworks: List[FrameworkInfo]) -> Dict[str, Any]:
         """Analyze compatibility between detected frameworks."""
         compatibility_issues = []
         recommendations = []

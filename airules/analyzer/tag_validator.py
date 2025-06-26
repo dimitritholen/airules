@@ -1,7 +1,7 @@
 """Tag validation, deduplication, and quality control."""
 
 import re
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from .tag_rules import (
     EXCLUSION_RULES,
@@ -249,7 +249,7 @@ class TagValidator:
         return normalized_tags, warnings
 
     def suggest_missing_tags(
-        self, tags: List[str], project_context: Dict[str, any]
+        self, tags: List[str], project_context: Dict[str, Any]
     ) -> List[str]:
         """Suggest additional tags that might be missing based on context."""
         suggestions = []
@@ -287,7 +287,7 @@ class TagValidator:
 
         return [s for s in suggestions if s not in tag_set]
 
-    def calculate_tag_relevance_score(self, tag: str, context: Dict[str, any]) -> float:
+    def calculate_tag_relevance_score(self, tag: str, context: Dict[str, Any]) -> float:
         """Calculate relevance score for a tag given project context."""
         base_score = TAG_PRIORITIES.get(tag, 5) / 10.0  # Normalize to 0-1
 

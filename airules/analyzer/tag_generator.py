@@ -1,7 +1,7 @@
 """Smart tag generation from project analysis results."""
 
 from collections import defaultdict
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from .data_models import (
     AnalysisResult,
@@ -47,7 +47,7 @@ class TagGenerator:
         self,
         analysis_result: AnalysisResult,
         framework_info: Optional[List[FrameworkInfo]] = None,
-        user_preferences: Optional[Dict[str, any]] = None,
+        user_preferences: Optional[Dict[str, Any]] = None,
     ) -> List[str]:
         """
         Generate prioritized list of relevant tags from analysis results.
@@ -591,7 +591,7 @@ class TagGenerator:
     def _apply_user_preferences(
         self,
         tag_sources: Dict[str, List[Tuple[str, float]]],
-        user_preferences: Dict[str, any],
+        user_preferences: Dict[str, Any],
     ) -> Dict[str, List[Tuple[str, float]]]:
         """Apply user preferences to tag generation."""
 
