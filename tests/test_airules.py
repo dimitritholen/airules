@@ -108,14 +108,14 @@ def test_generate_missing_perplexity_key(monkeypatch, isolated_fs_with_config):
     monkeypatch.delenv("PERPLEXITY_API_KEY", raising=False)
     result = runner.invoke(app, ["cursor", "--research"])
     assert result.exit_code == 1
-    assert "Authorization Required" in result.output
+    assert "Missing Perplexity API Key" in result.output
 
 def test_generate_missing_openai_key(monkeypatch, isolated_fs_with_config):
     """Test that the CLI exits if OPENAI_API_KEY is not set."""
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     result = runner.invoke(app, ["cursor"])
     assert result.exit_code == 1
-    assert "The api_key client option must be set" in result.output
+    assert "Missing OpenAI API Key" in result.output
 
 @patch('airules.cli.in_virtualenv', return_value=False)
 def test_cli_fails_outside_venv(mock_in_virtualenv, isolated_fs_with_config):
@@ -126,19 +126,18 @@ def test_cli_fails_outside_venv(mock_in_virtualenv, isolated_fs_with_config):
 
 
 
-@patch('airules.cli.validate_with_claude')
 @patch('airules.cli.get_openai_rules', return_value="RULES")
 def test_pipeline_review_no_anthropic_key(
-    mock_get_rules, mock_validate, isolated_fs_with_config, monkeypatch
+    mock_get_rules, isolated_fs_with_config, monkeypatch
 ):
-    """Test that the review step is skipped if ANTHROPIC_API_KEY is not set."""
+    """Test that the CLI exits if --review is used without ANTHROPIC_API_KEY."""
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     project_path = str(isolated_fs_with_config)
     result = runner.invoke(
         app, ["cursor", "--review", "claude-model", "--project-path", project_path]
     )
-    assert result.exit_code == 0
-    mock_validate.assert_not_called()
+    assert result.exit_code == 1
+    assert "Missing Anthropic API Key" in result.output
 
 @patch('airules.cli.get_openai_rules', return_value="NEW RULES")
 def test_overwrite_prompt_no(mock_get_rules, isolated_fs_with_config):

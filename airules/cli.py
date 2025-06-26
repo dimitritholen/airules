@@ -14,6 +14,14 @@ from rich.console import Console
 from .config import create_default_config, get_config, get_config_path
 from .venv_check import in_virtualenv
 
+__version__ = "1.0.0"
+
+def version_callback(value: bool):
+    if value:
+        console.print(f"[bold blue]rules4[/bold blue] version [bold green]{__version__}[/bold green]")
+        console.print("[dim]A CLI to generate AI coding assistant rules for your project[/dim]")
+        raise typer.Exit()
+
 app = typer.Typer(help="""[bold blue]A CLI to generate AI coding assistant rules for your project (rules4)[/bold blue]
 
 [bold yellow]🚀 Quick Start Examples:[/bold yellow]
@@ -42,7 +50,10 @@ app = typer.Typer(help="""[bold blue]A CLI to generate AI coding assistant rules
 """)
 
 @app.callback(invoke_without_command=True)
-def main(ctx: typer.Context):
+def main(
+    ctx: typer.Context,
+    version: Optional[bool] = typer.Option(None, "--version", "-v", callback=version_callback, help="Show version information.")
+):
     """[bold blue]A CLI to generate AI coding assistant rules for your project[/bold blue]
     
     Generate customized rules for popular AI coding assistants like Cursor, Cline, 
@@ -131,8 +142,16 @@ def clean_rules_content(content: str) -> str:
 
 def research_with_perplexity(lang: str, tag: str) -> str:
     """Performs research using Perplexity API and returns the findings."""
+    api_key = os.environ.get("PERPLEXITY_API_KEY")
+    if not api_key:
+        error_console.print("\n[bold red]✗ Missing Perplexity API Key[/bold red]")
+        error_console.print("[yellow]To use the --research flag, you need to set your Perplexity API key:[/yellow]")
+        error_console.print("[dim]export PERPLEXITY_API_KEY='your-api-key-here'[/dim]")
+        error_console.print("\n[blue]Get your API key at: https://www.perplexity.ai/settings/api[/blue]")
+        raise typer.Exit(code=1)
+    
     client = openai.OpenAI(
-        api_key=os.environ.get("PERPLEXITY_API_KEY"),
+        api_key=api_key,
         base_url="https://api.perplexity.ai"
     )
 
@@ -150,7 +169,15 @@ def research_with_perplexity(lang: str, tag: str) -> str:
 
 def get_openai_rules(lang: str, tool: str, tag: str, primary_model: str, research_summary: Optional[str] = None) -> str:
     """Generates coding assistant rules using OpenAI API."""
-    client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        error_console.print("\n[bold red]✗ Missing OpenAI API Key[/bold red]")
+        error_console.print("[yellow]To generate rules, you need to set your OpenAI API key:[/yellow]")
+        error_console.print("[dim]export OPENAI_API_KEY='your-api-key-here'[/dim]")
+        error_console.print("\n[blue]Get your API key at: https://platform.openai.com/api-keys[/blue]")
+        raise typer.Exit(code=1)
+    
+    client = openai.OpenAI(api_key=api_key)
 
 
     today = datetime.now().strftime("%Y-%m-%d")
@@ -182,9 +209,15 @@ def get_openai_rules(lang: str, tool: str, tag: str, primary_model: str, researc
 
 def validate_with_claude(content: str, review_model: str) -> str:
     """Validates and refines the generated rules using Anthropic's Claude."""
-    client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-    if not client.api_key:
-        raise ValueError("ANTHROPIC_API_KEY environment variable not set for --review flag.")
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        error_console.print("\n[bold red]✗ Missing Anthropic API Key[/bold red]")
+        error_console.print("[yellow]To use the --review flag with Claude, you need to set your Anthropic API key:[/yellow]")
+        error_console.print("[dim]export ANTHROPIC_API_KEY='your-api-key-here'[/dim]")
+        error_console.print("\n[blue]Get your API key at: https://console.anthropic.com/account/keys[/blue]")
+        raise typer.Exit(code=1)
+    
+    client = anthropic.Anthropic(api_key=api_key)
 
     response = client.messages.create(
         model=review_model,
@@ -295,7 +328,7 @@ def run_generation_pipeline(tool: str, primary_model: str, research: bool, revie
 
             with Spinner(f"Generating rules for '{tag_item}'"):
                 rules_content = get_openai_rules(current_lang, tool, tag_item, primary_model, research_summary=research_summary)
-                if review_model and os.environ.get("ANTHROPIC_API_KEY"):
+                if review_model:
                     rules_content = validate_with_claude(rules_content, review_model)
 
             rules_content = clean_rules_content(rules_content)
