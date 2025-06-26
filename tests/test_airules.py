@@ -65,10 +65,10 @@ def test_tool_subcommand_invokes_pipeline(mock_run_pipeline):
 
 @patch("airules.cli.write_rules_file")
 @patch(
-    "airules.cli.validate_with_claude",
+    "airules.cli.validate_rules",
     side_effect=lambda content, model: f"{content}\\n- Validated",
 )
-@patch("airules.cli.get_openai_rules", return_value="RULES")
+@patch("airules.cli.generate_rules", return_value="RULES")
 @patch("airules.cli.research_with_perplexity", return_value="RESEARCH SUMMARY")
 def test_full_pipeline(
     mock_research,
@@ -87,7 +87,7 @@ def test_full_pipeline(
             "cursor",
             "--research",
             "--review",
-            "claude-model",
+            "claude-3-sonnet-20240229",
             "--project-path",
             project_path,
         ],
@@ -152,7 +152,7 @@ def test_cli_fails_outside_venv(mock_in_virtualenv, isolated_fs_with_config):
     assert "This command must be run in a virtual environment" in result.output
 
 
-@patch("airules.cli.get_openai_rules", return_value="RULES")
+@patch("airules.cli.generate_rules", return_value="RULES")
 def test_pipeline_review_no_anthropic_key(
     mock_get_rules, isolated_fs_with_config, monkeypatch
 ):
@@ -160,13 +160,20 @@ def test_pipeline_review_no_anthropic_key(
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     project_path = str(isolated_fs_with_config)
     result = runner.invoke(
-        app, ["cursor", "--review", "claude-model", "--project-path", project_path]
+        app,
+        [
+            "cursor",
+            "--review",
+            "claude-3-sonnet-20240229",
+            "--project-path",
+            project_path,
+        ],
     )
     assert result.exit_code == 1
     assert "Missing Anthropic API Key" in result.output
 
 
-@patch("airules.cli.get_openai_rules", return_value="NEW RULES")
+@patch("airules.cli.generate_rules", return_value="NEW RULES")
 def test_overwrite_prompt_no(mock_get_rules, isolated_fs_with_config):
     """Test that the file is not overwritten when the user inputs 'n'."""
     filepath = isolated_fs_with_config / ".cursor/rules/security.mdc"
@@ -180,7 +187,7 @@ def test_overwrite_prompt_no(mock_get_rules, isolated_fs_with_config):
     assert filepath.read_text() == "OLD RULES"
 
 
-@patch("airules.cli.get_openai_rules", return_value="NEW RULES")
+@patch("airules.cli.generate_rules", return_value="NEW RULES")
 def test_overwrite_prompt_yes(mock_get_rules, isolated_fs_with_config):
     """Test that the file is overwritten when the user inputs 'y'."""
     filepath = isolated_fs_with_config / ".cursor/rules/security.mdc"
@@ -191,3 +198,41 @@ def test_overwrite_prompt_yes(mock_get_rules, isolated_fs_with_config):
 
     assert "already exists. Overwrite?" in result.output
     assert filepath.read_text() == "NEW RULES"
+
+
+def test_list_models_command():
+    """Test the list-models command shows available models."""
+    result = runner.invoke(app, ["list-models"])
+    assert result.exit_code == 0
+    assert "Available Models for AI Rules Generation" in result.output
+    assert "OPENAI Models:" in result.output
+    assert "ANTHROPIC Models:" in result.output
+    assert "PERPLEXITY Models:" in result.output
+    assert "gpt-4-turbo" in result.output
+    assert "claude-3-sonnet-20240229" in result.output
+
+
+@patch("airules.cli.generate_rules", return_value="CLAUDE RULES")
+def test_claude_model_as_primary(mock_get_rules, isolated_fs_with_config, monkeypatch):
+    """Test that Claude models can be used as primary generation model."""
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "fake-key")
+    project_path = str(isolated_fs_with_config)
+    result = runner.invoke(
+        app,
+        [
+            "cursor",
+            "--primary",
+            "claude-3-sonnet-20240229",
+            "--project-path",
+            project_path,
+        ],
+        catch_exceptions=False,
+    )
+    assert result.exit_code == 0, result.output
+    mock_get_rules.assert_called_with(
+        "python",
+        "cursor",
+        "security",
+        "claude-3-sonnet-20240229",
+        research_summary=None,
+    )

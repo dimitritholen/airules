@@ -12,6 +12,7 @@ import typer
 from rich.console import Console
 
 from .config import create_default_config, get_config, get_config_path
+from .models import format_models_list, get_provider_for_model
 from .venv_check import in_virtualenv
 
 __version__ = "1.0.0"
@@ -33,16 +34,16 @@ app = typer.Typer(
 
 [bold blue]EXAMPLES:[/bold blue]
   [dim]$[/dim] rules4 copilot --lang python --tags "pytest" --primary gpt-4-turbo
-  [dim]$[/dim] rules4 copilot --lang javascript --research --review claude-3-5-sonnet-20241022
+  [dim]$[/dim] rules4 cursor --primary claude-3-5-sonnet-20241022 --review gpt-4o
   [dim]$[/dim] rules4 generate --lang go --tags "code style,testing"
-  [dim]$[/dim] rules4 cursor --lang typescript --tags "react,hooks" --dry-run
+  [dim]$[/dim] rules4 list-models  # See all available models
 
 [bold blue]TIPS:[/bold blue]
   [green]•[/green] Run [bold]'rules4 init'[/bold] to create config file
   [green]•[/green] Use [bold]'--research'[/bold] for better results
-  [green]•[/green] Available: [italic]cursor, cline, roo, copilot, claude[/italic]
+  [green]•[/green] Mix models: Claude for generation, GPT-4 for review
 """,
-    rich_markup_mode="rich"
+    rich_markup_mode="rich",
 )
 
 
@@ -95,7 +96,7 @@ class Spinner:
         # Hide cursor
         self.HIDE_CURSOR = "\033[?25l"
         self.SHOW_CURSOR = "\033[?25h"
-        
+
         # Different spinner styles
         self.spinners = {
             "dots": ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"],
@@ -105,15 +106,37 @@ class Spinner:
             "arc": ["◜", "◠", "◝", "◞", "◡", "◟"],
             "circle": ["◐", "◓", "◑", "◒"],
             "bouncing": ["⠁", "⠂", "⠄", "⡀", "⢀", "⠠", "⠐", "⠈"],
-            "progress": ["[    ]", "[=   ]", "[==  ]", "[=== ]", "[====]", "[ ===]", "[  ==]", "[   =]"],
+            "progress": [
+                "[    ]",
+                "[=   ]",
+                "[==  ]",
+                "[=== ]",
+                "[====]",
+                "[ ===]",
+                "[  ==]",
+                "[   =]",
+            ],
             "moon": ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"],
-            "clock": ["🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚", "🕛"],
+            "clock": [
+                "🕐",
+                "🕑",
+                "🕒",
+                "🕓",
+                "🕔",
+                "🕕",
+                "🕖",
+                "🕗",
+                "🕘",
+                "🕙",
+                "🕚",
+                "🕛",
+            ],
             "earth": ["🌍", "🌎", "🌏"],
             "hearts": ["💛", "💙", "💜", "💚", "❤️ "],
             "arrows": ["←", "↖", "↑", "↗", "→", "↘", "↓", "↙"],
-            "grow": ["▁", "▃", "▄", "▅", "▆", "▇", "█", "▇", "▆", "▅", "▄", "▃"]
+            "grow": ["▁", "▃", "▄", "▅", "▆", "▇", "█", "▇", "▆", "▅", "▄", "▃"],
         }
-        
+
         # Use a nice default spinner
         self.current_spinner = self.spinners["dots"]
         self.frame_delay = 0.08  # Faster, smoother animation
@@ -127,10 +150,12 @@ class Spinner:
         while not self.stop_running.is_set():
             # Get current frame
             frame = self.current_spinner[i % len(self.current_spinner)]
-            
+
             # Build the complete line with colors
-            output = f"\r{self.CYAN}{frame}{self.ENDC} {self.BOLD}{self.message}{self.ENDC}"
-            
+            output = (
+                f"\r{self.CYAN}{frame}{self.ENDC} {self.BOLD}{self.message}{self.ENDC}"
+            )
+
             # Write the spinner with proper line clearing
             sys.stdout.write("\r\033[K" + output)
             sys.stdout.flush()
@@ -206,34 +231,29 @@ def research_with_perplexity(lang: str, tag: str) -> str:
     return response.choices[0].message.content or ""
 
 
-def get_openai_rules(
+def generate_rules(
     lang: str,
     tool: str,
     tag: str,
-    primary_model: str,
+    model: str,
     research_summary: Optional[str] = None,
 ) -> str:
-    """Generates coding assistant rules using OpenAI API."""
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        error_console.print("\n[bold red]✗ Missing OpenAI API Key[/bold red]")
+    """Generates coding assistant rules using the appropriate AI API based on model."""
+    provider = get_provider_for_model(model)
+
+    if not provider:
+        error_console.print(f"\n[bold red]✗ Unknown model: {model}[/bold red]")
         error_console.print(
-            "[yellow]To generate rules, you need to set your OpenAI API key:[/yellow]"
-        )
-        error_console.print("[dim]export OPENAI_API_KEY='your-api-key-here'[/dim]")
-        error_console.print(
-            "\n[blue]Get your API key at: https://platform.openai.com/api-keys[/blue]"
+            "[yellow]Use --list-models to see available models.[/yellow]"
         )
         raise typer.Exit(code=1)
-
-    client = openai.OpenAI(api_key=api_key)
 
     today = datetime.now().strftime("%Y-%m-%d")
 
     prompt_sections = [
         f"Generate a set of rules for the AI coding assistant '{tool}' for a '{lang}' project.",
-        f"Use best practices and industry standard rulesets with clarity and proper formatting.",
-        f"Keep the rules concise and to the point.",
+        "Use best practices and industry standard rulesets with clarity and proper formatting.",
+        "Keep the rules concise and to the point.",
         f"The rules should focus on the topic: '{tag}'.",
         f"The current date is {today}. The rules should be modern and reflect the latest standards.",
         "The output should be a markdown file, containing only the rules, without any additional explanations or preamble.",
@@ -250,50 +270,142 @@ def get_openai_rules(
 
     prompt = "\n".join(prompt_sections)
 
-    response = client.chat.completions.create(
-        model=primary_model,
-        messages=[
-            {
-                "role": "system",
-                "content": "You are an expert in generating rules for AI coding assistants. Your output must be only the raw markdown content for the rules file.",
-            },
-            {"role": "user", "content": prompt},
-        ],
-    )
-    return response.choices[0].message.content or ""
+    if provider == "openai":
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            error_console.print("\n[bold red]✗ Missing OpenAI API Key[/bold red]")
+            error_console.print(
+                "[yellow]To generate rules with OpenAI models, you need to set your OpenAI API key:[/yellow]"
+            )
+            error_console.print("[dim]export OPENAI_API_KEY='your-api-key-here'[/dim]")
+            error_console.print(
+                "\n[blue]Get your API key at: https://platform.openai.com/api-keys[/blue]"
+            )
+            raise typer.Exit(code=1)
 
-
-def validate_with_claude(content: str, review_model: str) -> str:
-    """Validates and refines the generated rules using Anthropic's Claude."""
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        error_console.print("\n[bold red]✗ Missing Anthropic API Key[/bold red]")
-        error_console.print(
-            "[yellow]To use the --review flag with Claude, you need to set your Anthropic API key:[/yellow]"
+        openai_client = openai.OpenAI(api_key=api_key)
+        openai_response = openai_client.chat.completions.create(
+            model=model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an expert in generating rules for AI coding assistants. Your output must be only the raw markdown content for the rules file.",
+                },
+                {"role": "user", "content": prompt},
+            ],
         )
-        error_console.print("[dim]export ANTHROPIC_API_KEY='your-api-key-here'[/dim]")
+        return openai_response.choices[0].message.content or ""
+
+    elif provider == "anthropic":
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            error_console.print("\n[bold red]✗ Missing Anthropic API Key[/bold red]")
+            error_console.print(
+                "[yellow]To generate rules with Anthropic models, you need to set your Anthropic API key:[/yellow]"
+            )
+            error_console.print(
+                "[dim]export ANTHROPIC_API_KEY='your-api-key-here'[/dim]"
+            )
+            error_console.print(
+                "\n[blue]Get your API key at: https://console.anthropic.com/account/keys[/blue]"
+            )
+            raise typer.Exit(code=1)
+
+        anthropic_client = anthropic.Anthropic(api_key=api_key)
+        system_prompt = "You are an expert in generating rules for AI coding assistants. Your output must be only the raw markdown content for the rules file."
+
+        anthropic_response = anthropic_client.messages.create(
+            model=model,
+            max_tokens=4096,
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"{system_prompt}\n\n{prompt}",
+                }
+            ],
+        )
+        return anthropic_response.content[0].text  # type: ignore
+
+    else:
         error_console.print(
-            "\n[blue]Get your API key at: https://console.anthropic.com/account/keys[/blue]"
+            f"\n[bold red]✗ Provider {provider} not supported for generation[/bold red]"
+        )
+        raise typer.Exit(code=1)
+
+
+def validate_rules(content: str, review_model: str) -> str:
+    """Validates and refines the generated rules using the appropriate AI API based on model."""
+    provider = get_provider_for_model(review_model)
+
+    if not provider:
+        error_console.print(f"\n[bold red]✗ Unknown model: {review_model}[/bold red]")
+        error_console.print(
+            "[yellow]Use --list-models to see available models.[/yellow]"
         )
         raise typer.Exit(code=1)
 
     today = datetime.now().strftime("%Y-%m-%d")
+    review_prompt = f"Please review and refine the following AI coding assistant rules. Ensure they are clear, concise, and follow best practices and industry standards as of {today}. Return only the refined markdown content, without any preamble.\n\n---\n\n{content}"
 
-    client = anthropic.Anthropic(api_key=api_key)
+    if provider == "openai":
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            error_console.print("\n[bold red]✗ Missing OpenAI API Key[/bold red]")
+            error_console.print(
+                "[yellow]To use the --review flag with OpenAI models, you need to set your OpenAI API key:[/yellow]"
+            )
+            error_console.print("[dim]export OPENAI_API_KEY='your-api-key-here'[/dim]")
+            error_console.print(
+                "\n[blue]Get your API key at: https://platform.openai.com/api-keys[/blue]"
+            )
+            raise typer.Exit(code=1)
 
-    response = client.messages.create(
-        model=review_model,
-        max_tokens=4096,
-        messages=[
-            {
-                "role": "user",
-                "content": f"Please review and refine the following AI coding assistant rules. Ensure they are clear, concise, and follow best practices and industry standards as of {today}. Return only the refined markdown content, without any preamble.\n\n---\n\n{content}",
-            }
-        ],
-    )
-    # Access the text content from the response
-    # Type ignore due to complex Anthropic API response types
-    return response.content[0].text  # type: ignore
+        openai_client = openai.OpenAI(api_key=api_key)
+        openai_response = openai_client.chat.completions.create(
+            model=review_model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an expert reviewer of AI coding assistant rules. Your task is to refine and improve the provided rules.",
+                },
+                {"role": "user", "content": review_prompt},
+            ],
+        )
+        return openai_response.choices[0].message.content or ""
+
+    elif provider == "anthropic":
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            error_console.print("\n[bold red]✗ Missing Anthropic API Key[/bold red]")
+            error_console.print(
+                "[yellow]To use the --review flag with Anthropic models, you need to set your Anthropic API key:[/yellow]"
+            )
+            error_console.print(
+                "[dim]export ANTHROPIC_API_KEY='your-api-key-here'[/dim]"
+            )
+            error_console.print(
+                "\n[blue]Get your API key at: https://console.anthropic.com/account/keys[/blue]"
+            )
+            raise typer.Exit(code=1)
+
+        anthropic_client = anthropic.Anthropic(api_key=api_key)
+        anthropic_response = anthropic_client.messages.create(
+            model=review_model,
+            max_tokens=4096,
+            messages=[
+                {
+                    "role": "user",
+                    "content": review_prompt,
+                }
+            ],
+        )
+        return anthropic_response.content[0].text  # type: ignore
+
+    else:
+        error_console.print(
+            f"\n[bold red]✗ Provider {provider} not supported for review[/bold red]"
+        )
+        raise typer.Exit(code=1)
 
 
 def get_rules_filepath(tool: str, lang: str, tag: str, project_path: str) -> Path:
@@ -354,7 +466,7 @@ def init():
 
     Creates a default configuration file in the current directory with:
     [green]•[/green] Default language and tool settings
-    [green]•[/green] Customizable tags for rule generation  
+    [green]•[/green] Customizable tags for rule generation
     [green]•[/green] Environment variable references for API keys
 
     [yellow]Must be run inside a virtual environment for safety.[/yellow]
@@ -426,7 +538,7 @@ def run_generation_pipeline(
                     research_summary = research_with_perplexity(current_lang, tag_item)
 
             with Spinner(f"Generating rules for '{tag_item}'"):
-                rules_content = get_openai_rules(
+                rules_content = generate_rules(
                     current_lang,
                     tool,
                     tag_item,
@@ -434,7 +546,7 @@ def run_generation_pipeline(
                     research_summary=research_summary,
                 )
                 if review_model:
-                    rules_content = validate_with_claude(rules_content, review_model)
+                    rules_content = validate_rules(rules_content, review_model)
 
             rules_content = clean_rules_content(rules_content)
             filepath = get_rules_filepath(tool, current_lang, tag_item, project_path)
@@ -457,10 +569,14 @@ def run_generation_pipeline(
 def _create_command(tool_name: str):
     def _command(
         primary: str = typer.Option(
-            "gpt-4-turbo", "--primary", help="Primary model for rule generation."
+            "gpt-4-turbo",
+            "--primary",
+            help="Primary model for rule generation (OpenAI or Anthropic). Use --list-models to see available options.",
         ),
         review: Optional[str] = typer.Option(
-            None, "--review", help="Review model for refinement."
+            None,
+            "--review",
+            help="Review model for refinement (OpenAI or Anthropic). Use --list-models to see available options.",
         ),
         research: bool = typer.Option(
             False, "--research", help="Perform research with Perplexity first."
@@ -506,10 +622,14 @@ for tool in ["cursor", "cline", "roo", "copilot", "claude"]:
 @app.command()
 def generate(
     primary: str = typer.Option(
-        "gpt-4-turbo", "--primary", help="Primary model for rule generation."
+        "gpt-4-turbo",
+        "--primary",
+        help="Primary model for rule generation (OpenAI or Anthropic). Use --list-models to see available options.",
     ),
     review: Optional[str] = typer.Option(
-        None, "--review", help="Review model for refinement."
+        None,
+        "--review",
+        help="Review model for refinement (OpenAI or Anthropic). Use --list-models to see available options.",
     ),
     research: bool = typer.Option(
         False, "--research", help="Perform research with Perplexity first."
@@ -580,6 +700,29 @@ def generate(
             "[bold red]✗ No .rules4rc file found. Please run 'rules4 init' first.[/bold red]"
         )
         raise typer.Exit(code=1)
+
+
+@app.command(name="list-models")
+def list_models():
+    """List all available models for primary and review operations.
+
+    Shows models grouped by provider (OpenAI, Anthropic, Perplexity).
+    Both --primary and --review flags support OpenAI and Anthropic models.
+    """
+    if not in_virtualenv():
+        console.print(
+            "[bold red]✗ This command must be run in a virtual environment.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+
+    console.print("[bold blue]Available Models for AI Rules Generation[/bold blue]\n")
+    console.print(
+        "[dim]Both --primary and --review flags support OpenAI and Anthropic models.[/dim]"
+    )
+    console.print(format_models_list())
+    console.print(
+        "\n[yellow]Note: Research uses Perplexity's sonar-pro model by default.[/yellow]"
+    )
 
 
 if __name__ == "__main__":

@@ -6,7 +6,10 @@ A universal CLI utility to configure AI rules files (e.g., .roo/rules, CLAUDE.md
 
 - Supports any language or framework via `--lang` and `--tags` options
 - Configures rules for tools like Cursor, Roo, Claude, and more
+- Flexible model selection: Use OpenAI or Anthropic models for both generation and review
+- Mix and match models: e.g., Claude for generation, GPT-4 for review
 - Uses live Perplexity API for up-to-date best practices
+- Built-in `--list-models` command to see all available models
 - Dry-run mode to preview changes
 - Prompts before overwriting existing files
 - Simple one-command install (packaged for PyPI)
@@ -43,8 +46,8 @@ rules4 generate
 
 `rules4` interacts with various AI models and research services. To use these features, you need to set up the corresponding API keys as environment variables:
 
-- **OPENAI_API_KEY**: Required for generating rules using OpenAI models (e.g., `gpt-4-turbo`).
-- **ANTHROPIC_API_KEY**: Required if you use the `--review` flag with an Anthropic model (e.g., `claude-4-sonnet`).
+- **OPENAI_API_KEY**: Required for generating rules using OpenAI models (e.g., `gpt-4-turbo`, `gpt-4o`).
+- **ANTHROPIC_API_KEY**: Required for generating rules using Anthropic models (e.g., `claude-3-5-sonnet-20241022`, `claude-3-opus-20240229`).
 - **PERPLEXITY_API_KEY**: Required if you use the `--research` flag to perform research with Perplexity AI.
 
 Example (add to your shell profile, e.g., `~/.bashrc` or `~/.zshrc`):
@@ -73,18 +76,23 @@ This command will:
 
 ### Advanced Usage
 
-You can specify a primary model, a review model, and enable research:
+You can specify a primary model, a review model, and enable research. Both `--primary` and `--review` flags support OpenAI and Anthropic models:
 
 ```bash
-rules4 copilot --primary gpt4.1 --review claude-4-sonnet --research --lang javascript --tags "react,typescript"
+# Use Claude as primary, GPT-4 as reviewer
+rules4 copilot --primary claude-3-5-sonnet-20241022 --review gpt-4o --research --lang javascript --tags "react,typescript"
+
+# Use GPT-4 for both generation and review
+rules4 cursor --primary gpt-4-turbo --review gpt-4o --lang python --tags "async,testing"
+
+# Use Claude for both generation and review
+rules4 claude --primary claude-3-opus-20240229 --review claude-3-5-sonnet-20241022 --lang go --tags "concurrency"
 ```
 
-This command will:
-
-- Use `gpt4.1` as the primary model for rule generation.
-- Perform research using Perplexity AI before generating rules.
-- Have `claude-4-sonnet` review and refine the generated rules.
-- Generate rules for JavaScript projects, focusing on `react` and `typescript`.
+These commands demonstrate the flexibility:
+- You can use any combination of OpenAI and Anthropic models
+- The same model can be used for both primary generation and review
+- Research always uses Perplexity's `sonar-pro` model
 
 ### Generating Rules for All Configured Tools
 
@@ -101,14 +109,24 @@ This command will:
 
 ### Command-Line Options
 
-- `--primary <model_name>`: Specify the primary AI model for rule generation (e.g., `gpt-4-turbo`, `gpt4.1`).
-- `--review <model_name>`: Specify an AI model for reviewing and refining the generated rules (e.g., `claude-4-sonnet`).
+- `--primary <model_name>`: Specify the primary AI model for rule generation. Supports both OpenAI and Anthropic models (e.g., `gpt-4-turbo`, `gpt-4o`, `claude-3-5-sonnet-20241022`).
+- `--review <model_name>`: Specify an AI model for reviewing and refining the generated rules. Also supports both OpenAI and Anthropic models.
 - `--research`: Enable research using Perplexity AI before rule generation.
 - `--lang <language>`: Specify the programming language for rule generation (e.g., `python`, `javascript`, `go`).
 - `--tags <tag1,tag2,...>`: Comma-separated list of tags or topics for rule generation (e.g., `pytest,langgraph`, `react,typescript`, `code style`).
 - `--dry-run`: Preview the changes without actually writing any files.
 - `--yes`, `-y`: Overwrite existing files without prompting for confirmation.
 - `--project-path <path>`: (Optional) Specify the target project directory. Defaults to the current directory.
+
+### Listing Available Models
+
+To see all available models for use with `--primary` and `--review`:
+
+```bash
+rules4 list-models
+```
+
+This will display models grouped by provider (OpenAI, Anthropic, and Perplexity).
 
 ---
 

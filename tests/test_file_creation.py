@@ -33,7 +33,7 @@ def isolated_fs_with_config(tmp_path):
         yield Path(td)
 
 
-@patch("airules.cli.get_openai_rules", return_value="Generated Rules")
+@patch("airules.cli.generate_rules", return_value="Generated Rules")
 def test_claude_file_creation_and_append(mock_get_rules, isolated_fs_with_config):
     """Test that 'airules claude' creates and appends to CLAUDE.md."""
     project_path = isolated_fs_with_config
@@ -59,7 +59,7 @@ def test_claude_file_creation_and_append(mock_get_rules, isolated_fs_with_config
     assert "---" in final_content  # Separator should now exist
 
 
-@patch("airules.cli.get_openai_rules", return_value="Generated Rules")
+@patch("airules.cli.generate_rules", return_value="Generated Rules")
 def test_cursor_file_creation(mock_get_rules, isolated_fs_with_config):
     """Test that 'airules cursor' creates .cursor/rules/ with a .mdc file."""
     project_path = isolated_fs_with_config
@@ -72,7 +72,7 @@ def test_cursor_file_creation(mock_get_rules, isolated_fs_with_config):
     assert cursor_file_path.read_text() == "Generated Rules"
 
 
-@patch("airules.cli.get_openai_rules", return_value="Generated Rules")
+@patch("airules.cli.generate_rules", return_value="Generated Rules")
 def test_cline_file_creation(mock_get_rules, isolated_fs_with_config):
     """Test that 'airules cline' creates .cline/rules/ with a .md file."""
     project_path = isolated_fs_with_config
@@ -85,7 +85,7 @@ def test_cline_file_creation(mock_get_rules, isolated_fs_with_config):
     assert cline_file_path.read_text() == "Generated Rules"
 
 
-@patch("airules.cli.get_openai_rules", return_value="Generated Rules")
+@patch("airules.cli.generate_rules", return_value="Generated Rules")
 def test_roo_file_creation(mock_get_rules, isolated_fs_with_config):
     """Test that 'airules roo' creates .roo/rules/ with a .md file."""
     project_path = isolated_fs_with_config
@@ -98,7 +98,7 @@ def test_roo_file_creation(mock_get_rules, isolated_fs_with_config):
     assert roo_file_path.read_text() == "Generated Rules"
 
 
-@patch("airules.cli.get_openai_rules", return_value="Generated Rules")
+@patch("airules.cli.generate_rules", return_value="Generated Rules")
 def test_copilot_file_creation(mock_get_rules, isolated_fs_with_config):
     """Test that 'airules copilot' creates .github/copilot-python-security.md."""
     project_path = isolated_fs_with_config
