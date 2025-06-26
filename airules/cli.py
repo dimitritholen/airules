@@ -29,30 +29,30 @@ def version_callback(value: bool):
 
 
 app = typer.Typer(
-    help="""[bold blue]A CLI to generate AI coding assistant rules for your project (rules4)[/bold blue]
+    help="""A CLI to generate AI coding assistant rules for your project (rules4)
 
-[bold yellow]🚀 Quick Start Examples:[/bold yellow]
+🚀 Quick Start Examples:
 
-[bold cyan]1. Generate Python rules for Copilot[/bold cyan]
+1. Generate Python rules for Copilot
    Focus on specific topics like pytest and langgraph:
-   [dim]$[/dim] [bold green]rules4 copilot[/bold green] --primary gpt-4-turbo --lang python --tags "pytest,langgraph"
+   $ rules4 copilot --primary gpt-4-turbo --lang python --tags "pytest,langgraph"
 
-[bold cyan]2. Research-backed JavaScript rules[/bold cyan]
+2. Research-backed JavaScript rules
    Perform research first, then have Claude review the output:
-   [dim]$[/dim] [bold green]rules4 copilot[/bold green] --lang javascript --research --review claude-3-5-sonnet-20241022
+   $ rules4 copilot --lang javascript --research --review claude-3-5-sonnet-20241022
 
-[bold cyan]3. Generate rules for all configured tools[/bold cyan]
+3. Generate rules for all configured tools
    Use settings from .rules4rc for a Go project:
-   [dim]$[/dim] [bold green]rules4 generate[/bold green] --lang go --tags "code style,testing"
+   $ rules4 generate --lang go --tags "code style,testing"
 
-[bold cyan]4. Preview changes without writing files[/bold cyan]
+4. Preview changes without writing files
    Use dry-run to see what would be generated:
-   [dim]$[/dim] [bold green]rules4 cursor[/bold green] --lang typescript --tags "react,hooks" --dry-run
+   $ rules4 cursor --lang typescript --tags "react,hooks" --dry-run
 
-[bold yellow]💡 Pro Tips:[/bold yellow]
-• Run [bold]rules4 init[/bold] first to create a .rules4rc config file
-• Use [bold]--research[/bold] for more informed rule generation
-• Combine multiple tags with commas: [bold]--tags "security,performance,testing"[/bold]
+💡 Pro Tips:
+• Run 'rules4 init' first to create a .rules4rc config file
+• Use '--research' for more informed rule generation
+• Combine multiple tags with commas: --tags "security,performance,testing"
 • Available tools: cursor, cline, roo, copilot, claude
 """
 )
@@ -69,16 +69,16 @@ def main(
         help="Show version information.",
     ),
 ):
-    """[bold blue]A CLI to generate AI coding assistant rules for your project[/bold blue]
+    """A CLI to generate AI coding assistant rules for your project
 
     Generate customized rules for popular AI coding assistants like Cursor, Cline,
     Roo, GitHub Copilot, and Claude. Supports research-backed rule generation and
     multi-model review processes.
 
-    [bold yellow]Getting Started:[/bold yellow]
-    1. Run [bold green]rules4 init[/bold green] to create a configuration file
+    Getting Started:
+    1. Run 'rules4 init' to create a configuration file
     2. Set your API keys in environment variables
-    3. Generate rules with [bold green]rules4 <tool>[/bold green] or [bold green]rules4 generate[/bold green]
+    3. Generate rules with 'rules4 <tool>' or 'rules4 generate'
     """
     if ctx.invoked_subcommand is None:
         console.print(ctx.get_help())
@@ -328,14 +328,14 @@ def write_rules_file(filepath: Path, content: str, dry_run: bool, yes: bool, too
 
 @app.command()
 def init():
-    """[bold green]Initialize a new .rules4rc configuration file[/bold green]
+    """Initialize a new .rules4rc configuration file
 
     Creates a default configuration file in the current directory with:
     • Default language and tool settings
     • Customizable tags for rule generation
     • Environment variable references for API keys
 
-    [dim]Must be run inside a virtual environment for safety.[/dim]
+    Must be run inside a virtual environment for safety.
     """
     if not in_virtualenv():
         console.print(
@@ -495,13 +495,13 @@ def generate(
     ),
     project_path: str = typer.Option(".", help="Target project directory."),
 ):
-    """[bold green]Generate rules for all tools configured in .rules4rc[/bold green]
+    """Generate rules for all tools configured in .rules4rc
 
     Processes all tools specified in your configuration file and generates
     appropriate rules for each one. This is the most efficient way to set up
     rules for multiple AI coding assistants at once.
 
-    [bold yellow]Features:[/bold yellow]
+    Features:
     • Batch processing for multiple tools
     • Respects .rules4rc configuration settings
     • Supports research-backed generation
