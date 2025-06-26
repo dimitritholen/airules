@@ -23,13 +23,7 @@ pip install rules4
 
 ## Quick Start
 
-1. Initialize rules4 in your project:
-
-```bash
-rules4 init
-```
-
-2. Generate rules for your favorite AI coding assistant:
+Generate rules for your favorite AI coding assistant directly:
 
 ```bash
 # For Cursor
@@ -38,9 +32,17 @@ rules4 cursor --lang python --tags "testing,security"
 # For Claude with research
 rules4 claude --research --lang javascript --tags "react,typescript"
 
-# For all configured tools
+# For all configured tools (requires initialization)
 rules4 generate
 ```
+
+**Optional**: Initialize a configuration file for your project to set defaults:
+
+```bash
+rules4 init
+```
+
+This creates a `.rules4rc` file with default settings, allowing you to use `rules4 generate` to build rules for all configured tools at once.
 
 ## API Keys and Environment Variables
 
@@ -96,7 +98,7 @@ These commands demonstrate the flexibility:
 
 ### Generating Rules for All Configured Tools
 
-If you have a `.rules4rc` file configured, you can generate rules for all specified tools:
+If you have a `.rules4rc` file configured (created with `rules4 init`), you can generate rules for all specified tools:
 
 ```bash
 rules4 generate --lang go --tags "code style"
@@ -106,6 +108,8 @@ This command will:
 
 - Read the list of tools from your `.rules4rc` file.
 - Generate rules for each tool, focusing on `code style` for Go projects.
+
+**Note**: The `generate` command requires a `.rules4rc` configuration file. Individual tool commands (like `rules4 cursor`, `rules4 claude`) work without any configuration.
 
 ### Command-Line Options
 
