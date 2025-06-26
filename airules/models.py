@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 
 MODELS = {
     "openai": [
+        "gpt-4.1",
         "gpt-4o",
         "gpt-4o-mini",
         "gpt-4o-2024-11-20",
@@ -18,6 +19,9 @@ MODELS = {
         "gpt-3.5-turbo-1106",
     ],
     "anthropic": [
+        "claude-sonnet-4-20250514",
+        "claude-sonnet-4-20250514",
+        "claude-3-7-sonnet-20250219",
         "claude-3-5-sonnet-20241022",
         "claude-3-5-sonnet-20240620",
         "claude-3-5-haiku-20241022",
@@ -27,10 +31,6 @@ MODELS = {
     ],
     "perplexity": [
         "sonar-pro",
-        "sonar",
-        "llama-3.1-sonar-small-128k-online",
-        "llama-3.1-sonar-large-128k-online",
-        "llama-3.1-sonar-huge-128k-online",
     ],
 }
 
