@@ -29,32 +29,20 @@ def version_callback(value: bool):
 
 
 app = typer.Typer(
-    help="""A CLI to generate AI coding assistant rules for your project (rules4)
+    help="""Generate AI coding assistant rules for your project
 
-🚀 Quick Start Examples:
+[bold blue]EXAMPLES:[/bold blue]
+  [dim]$[/dim] rules4 copilot --lang python --tags "pytest" --primary gpt-4-turbo
+  [dim]$[/dim] rules4 copilot --lang javascript --research --review claude-3-5-sonnet-20241022
+  [dim]$[/dim] rules4 generate --lang go --tags "code style,testing"
+  [dim]$[/dim] rules4 cursor --lang typescript --tags "react,hooks" --dry-run
 
-1. Generate Python rules for Copilot
-   Focus on specific topics like pytest and langgraph:
-   $ rules4 copilot --primary gpt-4-turbo --lang python --tags "pytest,langgraph"
-
-2. Research-backed JavaScript rules
-   Perform research first, then have Claude review the output:
-   $ rules4 copilot --lang javascript --research --review claude-3-5-sonnet-20241022
-
-3. Generate rules for all configured tools
-   Use settings from .rules4rc for a Go project:
-   $ rules4 generate --lang go --tags "code style,testing"
-
-4. Preview changes without writing files
-   Use dry-run to see what would be generated:
-   $ rules4 cursor --lang typescript --tags "react,hooks" --dry-run
-
-💡 Pro Tips:
-• Run 'rules4 init' first to create a .rules4rc config file
-• Use '--research' for more informed rule generation
-• Combine multiple tags with commas: --tags "security,performance,testing"
-• Available tools: cursor, cline, roo, copilot, claude
-"""
+[bold blue]TIPS:[/bold blue]
+  [green]•[/green] Run [bold]'rules4 init'[/bold] to create config file
+  [green]•[/green] Use [bold]'--research'[/bold] for better results
+  [green]•[/green] Available: [italic]cursor, cline, roo, copilot, claude[/italic]
+""",
+    rich_markup_mode="rich"
 )
 
 
@@ -75,10 +63,10 @@ def main(
     Roo, GitHub Copilot, and Claude. Supports research-backed rule generation and
     multi-model review processes.
 
-    Getting Started:
-    1. Run 'rules4 init' to create a configuration file
-    2. Set your API keys in environment variables
-    3. Generate rules with 'rules4 <tool>' or 'rules4 generate'
+    [bold blue]Getting Started:[/bold blue]
+    [green]1.[/green] Run [bold]'rules4 init'[/bold] to create a configuration file
+    [green]2.[/green] Set your API keys in environment variables
+    [green]3.[/green] Generate rules with [bold]'rules4 <tool>'[/bold] or [bold]'rules4 generate'[/bold]
     """
     if ctx.invoked_subcommand is None:
         console.print(ctx.get_help())
@@ -96,29 +84,58 @@ class Spinner:
         # Ensure the thread is marked as daemon so it doesn't block program exit
         self.spinner_thread.daemon = True
         # ANSI color and formatting codes
+        self.BLUE = "\033[94m"
+        self.CYAN = "\033[96m"
         self.GREEN = "\033[92m"
+        self.YELLOW = "\033[93m"
+        self.MAGENTA = "\033[95m"
+        self.DIM = "\033[2m"
+        self.BOLD = "\033[1m"
         self.ENDC = "\033[0m"
-        # Calculate message display length for better cleanup
-        self.display_len = len(message) + 15
+        # Hide cursor
+        self.HIDE_CURSOR = "\033[?25l"
+        self.SHOW_CURSOR = "\033[?25h"
+        
+        # Different spinner styles
+        self.spinners = {
+            "dots": ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"],
+            "dots2": ["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"],
+            "line": ["⎯", "⎯⎯", "⎯⎯⎯", "⎯⎯⎯⎯", "⎯⎯⎯⎯⎯", "⎯⎯⎯⎯", "⎯⎯⎯", "⎯⎯", "⎯"],
+            "stars": ["✶", "✸", "✹", "✺", "✹", "✸"],
+            "arc": ["◜", "◠", "◝", "◞", "◡", "◟"],
+            "circle": ["◐", "◓", "◑", "◒"],
+            "bouncing": ["⠁", "⠂", "⠄", "⡀", "⢀", "⠠", "⠐", "⠈"],
+            "progress": ["[    ]", "[=   ]", "[==  ]", "[=== ]", "[====]", "[ ===]", "[  ==]", "[   =]"],
+            "moon": ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"],
+            "clock": ["🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚", "🕛"],
+            "earth": ["🌍", "🌎", "🌏"],
+            "hearts": ["💛", "💙", "💜", "💚", "❤️ "],
+            "arrows": ["←", "↖", "↑", "↗", "→", "↘", "↓", "↙"],
+            "grow": ["▁", "▃", "▄", "▅", "▆", "▇", "█", "▇", "▆", "▅", "▄", "▃"]
+        }
+        
+        # Use a nice default spinner
+        self.current_spinner = self.spinners["dots"]
+        self.frame_delay = 0.08  # Faster, smoother animation
 
     def _spin(self):
         i = 0
-        # Save cursor position at start
-        sys.stdout.write("\033[s")
+        # Hide cursor at start
+        sys.stdout.write(self.HIDE_CURSOR)
         sys.stdout.flush()
 
         while not self.stop_running.is_set():
-            # Create the animated dots (1 to 3 dots)
-            dots = "." * (i % 3 + 1)
-            # Restore cursor to saved position
-            sys.stdout.write("\033[u")
-            # Clear line
-            sys.stdout.write("\033[K")
-            # Write the new spinner state
-            sys.stdout.write(f"{self.GREEN}{self.message} \u2728{dots}{self.ENDC}")
+            # Get current frame
+            frame = self.current_spinner[i % len(self.current_spinner)]
+            
+            # Build the complete line with colors
+            output = f"\r{self.CYAN}{frame}{self.ENDC} {self.BOLD}{self.message}{self.ENDC}"
+            
+            # Write the spinner with proper line clearing
+            sys.stdout.write("\r\033[K" + output)
             sys.stdout.flush()
 
-            time.sleep(0.3)
+            time.sleep(self.frame_delay)
             i += 1
 
     def __enter__(self):
@@ -132,8 +149,9 @@ class Spinner:
     def __exit__(self, exc_type, exc_value, traceback):
         self.stop_running.set()
         self.spinner_thread.join()
-        # Restore cursor and clear the spinner line completely
-        sys.stdout.write("\033[u\033[K\r")
+        # Clear the spinner line and show cursor
+        sys.stdout.write("\r\033[K")
+        sys.stdout.write(self.SHOW_CURSOR)
         sys.stdout.flush()
         # Brief pause to ensure cleanup completes
         time.sleep(0.05)
@@ -173,7 +191,7 @@ def research_with_perplexity(lang: str, tag: str) -> str:
 
     client = openai.OpenAI(api_key=api_key, base_url="https://api.perplexity.ai")
 
-    prompt = f"Provide a detailed, up-to-date summary of best practices for '{tag}' in a '{lang}' project. Focus on actionable rules and configurations."
+    prompt = f"Your goal is to provide rulesets for AI coding assistants in a '{lang}' project using '{tag}'. Focus the best rulesets on Github for similar projects and return only the best industry standard best practices in the correct format."
 
     response = client.chat.completions.create(
         model="sonar-pro",
@@ -214,6 +232,8 @@ def get_openai_rules(
 
     prompt_sections = [
         f"Generate a set of rules for the AI coding assistant '{tool}' for a '{lang}' project.",
+        f"Use best practices and industry standard rulesets with clarity and proper formatting.",
+        f"Keep the rules concise and to the point.",
         f"The rules should focus on the topic: '{tag}'.",
         f"The current date is {today}. The rules should be modern and reflect the latest standards.",
         "The output should be a markdown file, containing only the rules, without any additional explanations or preamble.",
@@ -257,6 +277,8 @@ def validate_with_claude(content: str, review_model: str) -> str:
         )
         raise typer.Exit(code=1)
 
+    today = datetime.now().strftime("%Y-%m-%d")
+
     client = anthropic.Anthropic(api_key=api_key)
 
     response = client.messages.create(
@@ -265,7 +287,7 @@ def validate_with_claude(content: str, review_model: str) -> str:
         messages=[
             {
                 "role": "user",
-                "content": f"Please review and refine the following AI coding assistant rules. Ensure they are clear, concise, and follow best practices. Return only the refined markdown content, without any preamble.\n\n---\n\n{content}",
+                "content": f"Please review and refine the following AI coding assistant rules. Ensure they are clear, concise, and follow best practices and industry standards as of {today}. Return only the refined markdown content, without any preamble.\n\n---\n\n{content}",
             }
         ],
     )
@@ -331,11 +353,11 @@ def init():
     """Initialize a new .rules4rc configuration file
 
     Creates a default configuration file in the current directory with:
-    • Default language and tool settings
-    • Customizable tags for rule generation
-    • Environment variable references for API keys
+    [green]•[/green] Default language and tool settings
+    [green]•[/green] Customizable tags for rule generation  
+    [green]•[/green] Environment variable references for API keys
 
-    Must be run inside a virtual environment for safety.
+    [yellow]Must be run inside a virtual environment for safety.[/yellow]
     """
     if not in_virtualenv():
         console.print(
@@ -512,11 +534,11 @@ def generate(
     appropriate rules for each one. This is the most efficient way to set up
     rules for multiple AI coding assistants at once.
 
-    Features:
-    • Batch processing for multiple tools
-    • Respects .rules4rc configuration settings
-    • Supports research-backed generation
-    • Optional Claude review for quality assurance
+    [bold blue]Features:[/bold blue]
+    [green]•[/green] Batch processing for multiple tools
+    [green]•[/green] Respects .rules4rc configuration settings
+    [green]•[/green] Supports research-backed generation
+    [green]•[/green] Optional Claude review for quality assurance
     """
     if not in_virtualenv():
         console.print(
