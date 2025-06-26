@@ -227,39 +227,40 @@ def init():
     console.print("[bold green]✓ Created default .airulesrc.[/bold green]")
 
 
-def run_generation_pipeline(tool: str, primary_model: str, research: bool, review_model: Optional[str], dry_run: bool, yes: bool, project_path: str):
+def run_generation_pipeline(tool: str, primary_model: str, research: bool, review_model: Optional[str], dry_run: bool, yes: bool, project_path: str, lang: Optional[str] = None, tags: Optional[str] = None):
     if not in_virtualenv():
         console.print("[bold red]✗ This command must be run in a virtual environment.[/bold red]")
         raise typer.Exit(code=1)
 
     try:
         config = get_config()
-        lang = config.get('settings', 'language', fallback='python')
-        tags_str = config.get('settings', 'tags', fallback='security')
-        tags = [tag.strip() for tag in tags_str.split(',')]
+        # Use provided lang and tags, or fallback to config
+        current_lang = lang if lang else config.get('settings', 'language', fallback='python')
+        current_tags_str = tags if tags else config.get('settings', 'tags', fallback='security')
+        current_tags = [tag.strip() for tag in current_tags_str.split(',')]
     except FileNotFoundError:
         console.print("[bold red]✗ No .airulesrc file found. Please run 'airules init' first.[/bold red]")
         raise typer.Exit(code=1)
 
     has_errors = False
-    for tag in tags:
+    for tag_item in current_tags:
         try:
             research_summary = None
             if research:
-                with Spinner(f"Researching '{tag}' with Perplexity"):
-                    research_summary = research_with_perplexity(lang, tag)
+                with Spinner(f"Researching '{tag_item}' with Perplexity"):
+                    research_summary = research_with_perplexity(current_lang, tag_item)
 
-            with Spinner(f"Generating rules for '{tag}'"):
-                rules_content = get_openai_rules(lang, tool, tag, primary_model, research_summary=research_summary)
+            with Spinner(f"Generating rules for '{tag_item}'"):
+                rules_content = get_openai_rules(current_lang, tool, tag_item, primary_model, research_summary=research_summary)
                 if review_model and os.environ.get("ANTHROPIC_API_KEY"):
                     rules_content = validate_with_claude(rules_content, review_model)
 
             rules_content = clean_rules_content(rules_content)
-            filepath = get_rules_filepath(tool, lang, tag, project_path)
+            filepath = get_rules_filepath(tool, current_lang, tag_item, project_path)
             write_rules_file(filepath, rules_content, dry_run, yes, tool)
 
         except (ValueError, RuntimeError, openai.OpenAIError) as e:
-            error_console.print(f"\n[bold red]✗ ERROR processing tag '{tag}': {e}[/bold red]")
+            error_console.print(f"\n[bold red]✗ ERROR processing tag '{tag_item}': {e}[/bold red]")
             has_errors = True
         except typer.Abort:
             # Handle user abort (like when they say 'n' to overwrite)
@@ -275,6 +276,8 @@ def _create_command(tool_name: str):
         primary: str = typer.Option("gpt-4-turbo", "--primary", help="Primary model for rule generation."),
         review: Optional[str] = typer.Option(None, "--review", help="Review model for refinement."),
         research: bool = typer.Option(False, "--research", help="Perform research with Perplexity first."),
+        lang: Optional[str] = typer.Option(None, "--lang", help="Specify the programming language for rule generation."),
+        tags: Optional[str] = typer.Option(None, "--tags", help="Comma-separated list of tags/topics for rule generation."),
         dry_run: bool = typer.Option(False, "--dry-run", help="Preview changes without writing files."),
         yes: bool = typer.Option(False, "-y", "--yes", help="Overwrite files without prompting."),
         project_path: str = typer.Option(".", help="Target project directory.")
@@ -287,7 +290,9 @@ def _create_command(tool_name: str):
             review_model=review,
             dry_run=dry_run,
             yes=yes,
-            project_path=project_path
+            project_path=project_path,
+            lang=lang,
+            tags=tags
         )
     return _command
 
@@ -299,6 +304,8 @@ def generate(
     primary: str = typer.Option("gpt-4-turbo", "--primary", help="Primary model for rule generation."),
     review: Optional[str] = typer.Option(None, "--review", help="Review model for refinement."),
     research: bool = typer.Option(False, "--research", help="Perform research with Perplexity first."),
+    lang: Optional[str] = typer.Option(None, "--lang", help="Specify the programming language for rule generation."),
+    tags: Optional[str] = typer.Option(None, "--tags", help="Comma-separated list of tags/topics for rule generation."),
     dry_run: bool = typer.Option(False, "--dry-run", help="Preview changes without writing files."),
     yes: bool = typer.Option(False, "-y", "--yes", help="Overwrite files without prompting."),
     project_path: str = typer.Option(".", help="Target project directory.")
@@ -328,7 +335,9 @@ def generate(
                 review_model=review,
                 dry_run=dry_run,
                 yes=yes,
-                project_path=project_path
+                project_path=project_path,
+                lang=lang,
+                tags=tags
             )
             
     except FileNotFoundError:
