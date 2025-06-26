@@ -16,6 +16,12 @@ from airules.analyzer.data_models import (
     TestingInfo,
 )
 from airules.analyzer.tag_generator import TagGenerator
+from airules.analyzer.tag_rules import (
+    FRAMEWORK_TAG_MAPPING,
+    MAX_TAGS_PER_PROJECT,
+    MIN_TAGS_PER_PROJECT,
+    PROJECT_TYPE_TAGS,
+)
 from airules.analyzer.tag_validator import TagValidator
 
 
@@ -499,15 +505,6 @@ class TestTagValidator:
         assert "react" in report
         assert "vue" in report
         assert "testing" in report
-
-
-# Import test data from tag_rules
-from airules.analyzer.tag_rules import (
-    FRAMEWORK_TAG_MAPPING,
-    MAX_TAGS_PER_PROJECT,
-    MIN_TAGS_PER_PROJECT,
-    PROJECT_TYPE_TAGS,
-)
 
 
 class TestTagRulesIntegration:

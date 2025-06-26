@@ -626,7 +626,7 @@ node_modules
         start_time = time.time()
 
         package_infos = self.parser.parse_all_package_files(str(self.temp_dir))
-        frameworks = self.detector.detect_frameworks(str(self.temp_dir))
+        self.detector.detect_frameworks(str(self.temp_dir))
         dep_analysis = self.analyzer.analyze_project_dependencies(str(self.temp_dir))
 
         end_time = time.time()

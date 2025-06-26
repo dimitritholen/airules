@@ -1,7 +1,6 @@
 """Project structure scanning utilities for recursive directory analysis."""
 
 import fnmatch
-import os
 from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -206,9 +205,9 @@ class FileScanner:
         Returns:
             Tuple of (files_by_extension, project_structure, file_stats)
         """
-        project_path = Path(project_path).resolve()
-        if not project_path.exists() or not project_path.is_dir():
-            raise ValueError(f"Invalid project path: {project_path}")
+        project_path_obj = Path(project_path).resolve()
+        if not project_path_obj.exists() or not project_path_obj.is_dir():
+            raise ValueError(f"Invalid project path: {project_path_obj}")
 
         # Reset file count for each scan
         self._file_count = 0
@@ -220,7 +219,7 @@ class FileScanner:
         doc_files: List[str] = []
 
         # Scan files recursively
-        for file_path in self._walk_directory(project_path, 0):
+        for file_path in self._walk_directory(project_path_obj, 0):
             if self._file_count >= self.max_files:
                 break
 
@@ -245,7 +244,7 @@ class FileScanner:
 
         # Analyze project structure
         structure = self._analyze_structure(
-            project_path, all_files, test_files, config_files
+            project_path_obj, all_files, test_files, config_files
         )
 
         # Calculate file statistics

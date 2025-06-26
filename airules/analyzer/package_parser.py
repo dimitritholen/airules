@@ -3,7 +3,7 @@
 import json
 import re
 import xml.etree.ElementTree as ET
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -18,11 +18,7 @@ class DependencyInfo:
     version: Optional[str] = None
     is_dev: bool = False
     is_optional: bool = False
-    extras: List[str] = None
-
-    def __post_init__(self):
-        if self.extras is None:
-            self.extras = []
+    extras: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -86,19 +82,19 @@ class PackageParser:
 
     def find_package_files(self, project_path: str) -> List[str]:
         """Find all recognized package files in the project directory and subdirectories."""
-        project_path = Path(project_path)
+        project_path_obj = Path(project_path)
         found_files = []
 
         # First check root directory
         for package_file in self.PACKAGE_FILES.keys():
-            file_path = project_path / package_file
+            file_path = project_path_obj / package_file
             if file_path.exists():
                 found_files.append(str(file_path))
 
         # Then check subdirectories (up to 3 levels deep to avoid infinite recursion)
         for package_file in self.PACKAGE_FILES.keys():
             pattern = f"**/{package_file}"
-            for file_path in project_path.glob(pattern):
+            for file_path in project_path_obj.glob(pattern):
                 if file_path.is_file() and str(file_path) not in found_files:
                     found_files.append(str(file_path))
 
@@ -106,8 +102,8 @@ class PackageParser:
 
     def parse_package_file(self, file_path: str) -> Optional[PackageInfo]:
         """Parse a single package file and return structured information."""
-        file_path = Path(file_path)
-        filename = file_path.name
+        file_path_obj = Path(file_path)
+        filename = file_path_obj.name
 
         if filename not in self.PACKAGE_FILES:
             self.errors.append(f"Unknown package file type: {filename}")
@@ -116,9 +112,11 @@ class PackageParser:
         parser_method = getattr(self, self.PACKAGE_FILES[filename])
 
         try:
-            return parser_method(str(file_path))
+            result = parser_method(str(file_path_obj))
+            # Type cast to ensure mypy knows this returns PackageInfo
+            return result if isinstance(result, PackageInfo) else None
         except Exception as e:
-            error_msg = f"Failed to parse {file_path}: {str(e)}"
+            error_msg = f"Failed to parse {file_path_obj}: {str(e)}"
             self.errors.append(error_msg)
             raise PackageParsingError(error_msg) from e
 
@@ -1079,5 +1077,5 @@ class PackageParser:
     def _get_text(self, element, default: str = "") -> str:
         """Get text content from XML element with default."""
         if element is not None and element.text:
-            return element.text.strip()
+            return str(element.text).strip()
         return default

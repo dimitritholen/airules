@@ -250,7 +250,7 @@ class User(models.Model):
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     def __str__(self):
         return self.email
 '''
@@ -593,7 +593,7 @@ mod tests {
             version: "1.0.0".to_string(),
             features: HashMap::new(),
         };
-        
+
         assert_eq!(config.app_name, "Test");
         assert_eq!(config.version, "1.0.0");
     }
@@ -637,11 +637,11 @@ impl UserManager {
             email,
             active: true,
         };
-        
+
         self.users.insert(self.next_id, user);
         let id = self.next_id;
         self.next_id += 1;
-        
+
         Ok(id)
     }
 
@@ -661,10 +661,10 @@ mod tests {
     #[test]
     fn test_user_manager() {
         let mut manager = UserManager::new();
-        
+
         let id = manager.add_user("John Doe".to_string(), "john@example.com".to_string()).unwrap();
         assert_eq!(id, 1);
-        
+
         let user = manager.get_user(id).unwrap();
         assert_eq!(user.name, "John Doe");
         assert_eq!(user.email, "john@example.com");

@@ -1,10 +1,10 @@
 """Framework and technology detection for various languages and ecosystems."""
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 from .package_parser import PackageInfo, PackageParser
 
@@ -44,11 +44,7 @@ class FrameworkInfo:
     version: Optional[str] = None
     confidence: float = 1.0
     detection_method: str = "dependency"
-    metadata: Dict = None
-
-    def __post_init__(self):
-        if self.metadata is None:
-            self.metadata = {}
+    metadata: Dict = field(default_factory=dict)
 
 
 @dataclass
@@ -584,11 +580,13 @@ class FrameworkDetector:
 
     def detect_frameworks(self, project_path: str) -> List[FrameworkInfo]:
         """Detect all frameworks in a project."""
-        project_path = Path(project_path)
+        project_path_obj = Path(project_path)
         detected_frameworks = []
 
         # Parse package files
-        package_infos = self.package_parser.parse_all_package_files(str(project_path))
+        package_infos = self.package_parser.parse_all_package_files(
+            str(project_path_obj)
+        )
 
         # Detect frameworks from dependencies
         for package_info in package_infos:
@@ -597,11 +595,11 @@ class FrameworkDetector:
             self.project_languages.add(package_info.language)
 
         # Detect frameworks from file patterns
-        file_frameworks = self._detect_from_files(project_path)
+        file_frameworks = self._detect_from_files(project_path_obj)
         detected_frameworks.extend(file_frameworks)
 
         # Detect frameworks from directory structure
-        structure_frameworks = self._detect_from_structure(project_path)
+        structure_frameworks = self._detect_from_structure(project_path_obj)
         detected_frameworks.extend(structure_frameworks)
 
         # Remove duplicates and sort by confidence
@@ -658,11 +656,14 @@ class FrameworkDetector:
 
             # Check if any framework dependency is present
             for dep in all_deps:
-                if any(fw_dep.lower() in dep.name.lower() for fw_dep in framework_deps):
+                if any(
+                    fw_dep.lower() in dep.name.lower()
+                    for fw_dep in cast(List[str], framework_deps)
+                ):
                     framework_info = FrameworkInfo(
-                        name=framework_def["name"],
-                        type=framework_def["type"],
-                        language=framework_def["language"],
+                        name=str(framework_def["name"]),
+                        type=FrameworkType(framework_def["type"]),
+                        language=str(framework_def["language"]),
                         version=dep.version,
                         confidence=0.9,
                         detection_method="dependency",
@@ -682,7 +683,7 @@ class FrameworkDetector:
         detected = []
 
         # Get all source files
-        source_files = []
+        source_files: List[Path] = []
         for ext in [
             ".js",
             ".ts",
@@ -705,12 +706,12 @@ class FrameworkDetector:
         for framework_key, framework_def in self.FRAMEWORK_DEFINITIONS.items():
             # Check for specific files
             framework_files = framework_def.get("files", [])
-            for file_path in framework_files:
+            for file_path in cast(List[str], framework_files):
                 if (project_path / file_path).exists():
                     framework_info = FrameworkInfo(
-                        name=framework_def["name"],
-                        type=framework_def["type"],
-                        language=framework_def["language"],
+                        name=str(framework_def["name"]),
+                        type=FrameworkType(framework_def["type"]),
+                        language=str(framework_def["language"]),
                         confidence=0.8,
                         detection_method="file_presence",
                         metadata={"detected_file": file_path},
@@ -728,12 +729,12 @@ class FrameworkDetector:
                         ) as f:
                             content = f.read(8192)  # Read first 8KB only
 
-                        for pattern in file_patterns:
+                        for pattern in cast(List[str], file_patterns):
                             if re.search(pattern, content, re.IGNORECASE):
                                 framework_info = FrameworkInfo(
-                                    name=framework_def["name"],
-                                    type=framework_def["type"],
-                                    language=framework_def["language"],
+                                    name=str(framework_def["name"]),
+                                    type=FrameworkType(framework_def["type"]),
+                                    language=str(framework_def["language"]),
                                     confidence=0.7,
                                     detection_method="file_pattern",
                                     metadata={
@@ -786,9 +787,9 @@ class FrameworkDetector:
                 if framework_key in self.FRAMEWORK_DEFINITIONS:
                     framework_def = self.FRAMEWORK_DEFINITIONS[framework_key]
                     framework_info = FrameworkInfo(
-                        name=framework_def["name"],
-                        type=framework_def["type"],
-                        language=framework_def["language"],
+                        name=str(framework_def["name"]),
+                        type=FrameworkType(framework_def["type"]),
+                        language=str(framework_def["language"]),
                         confidence=confidence
                         * 0.6,  # Lower confidence for structure-based detection
                         detection_method="directory_structure",
@@ -802,7 +803,7 @@ class FrameworkDetector:
         self, frameworks: List[FrameworkInfo]
     ) -> List[FrameworkInfo]:
         """Remove duplicate frameworks, keeping the one with highest confidence."""
-        seen = {}
+        seen: Dict[Tuple[str, FrameworkType, str], FrameworkInfo] = {}
 
         for framework in frameworks:
             key = (framework.name, framework.type, framework.language)
@@ -813,14 +814,14 @@ class FrameworkDetector:
 
     def _determine_project_type(self, frameworks: List[FrameworkInfo]) -> str:
         """Determine the primary project type based on detected frameworks."""
-        type_scores = {
-            "web": 0,
-            "mobile": 0,
-            "desktop": 0,
-            "library": 0,
-            "data_science": 0,
-            "game": 0,
-            "cli": 0,
+        type_scores: Dict[str, float] = {
+            "web": 0.0,
+            "mobile": 0.0,
+            "desktop": 0.0,
+            "library": 0.0,
+            "data_science": 0.0,
+            "game": 0.0,
+            "cli": 0.0,
         }
 
         for framework in frameworks:
@@ -843,7 +844,7 @@ class FrameworkDetector:
                 type_scores["game"] += framework.confidence * 2
 
         # Return the type with the highest score
-        max_type = max(type_scores, key=type_scores.get)
+        max_type = max(type_scores.keys(), key=lambda k: type_scores[k])
         return max_type if type_scores[max_type] > 0 else "library"
 
     def _calculate_confidence_score(self, frameworks: List[FrameworkInfo]) -> float:
@@ -917,7 +918,7 @@ class FrameworkDetector:
     def get_framework_suggestions(self, project_path: str) -> Dict[str, List[str]]:
         """Suggest complementary frameworks based on detected technology."""
         frameworks = self.detect_frameworks(project_path)
-        suggestions = {
+        suggestions: Dict[str, List[str]] = {
             "testing": [],
             "build_tools": [],
             "ui_libraries": [],

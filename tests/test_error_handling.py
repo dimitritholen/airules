@@ -30,8 +30,6 @@ class TestFileSystemErrorHandling:
     @pytest.mark.error_handling
     def test_missing_project_directory(self, tmp_path):
         """Test handling when project directory doesn't exist."""
-        non_existent_path = tmp_path / "does_not_exist"
-
         with runner.isolated_filesystem(temp_dir=tmp_path):
             os.chdir(tmp_path)
 

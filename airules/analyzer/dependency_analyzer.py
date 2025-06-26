@@ -11,6 +11,7 @@ from typing import Dict, List, Optional
 from .framework_detector import FrameworkDetector
 from .package_parser import DependencyInfo, PackageInfo, PackageParser
 
+
 class SecurityRisk(Enum):
     """Security risk levels for dependencies."""
 
@@ -20,6 +21,7 @@ class SecurityRisk(Enum):
     LOW = "low"
     INFO = "info"
 
+
 class DependencyHealth(Enum):
     """Health status of dependencies."""
 
@@ -28,6 +30,7 @@ class DependencyHealth(Enum):
     DEPRECATED = "deprecated"
     VULNERABLE = "vulnerable"
     ABANDONED = "abandoned"
+
 
 @dataclass
 class VulnerabilityInfo:
@@ -41,6 +44,7 @@ class VulnerabilityInfo:
     patched_versions: Optional[str] = None
     published_date: Optional[str] = None
     references: List[str] = field(default_factory=list)
+
 
 @dataclass
 class DependencyReport:
@@ -62,6 +66,7 @@ class DependencyReport:
     dependents_count: int = 0
     metadata: Dict = field(default_factory=dict)
 
+
 @dataclass
 class ProjectDependencyAnalysis:
     """Complete project dependency analysis."""
@@ -77,6 +82,7 @@ class ProjectDependencyAnalysis:
     framework_analysis: Optional[Dict] = None
     recommendations: List[str] = field(default_factory=list)
     scan_timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
+
 
 class DependencyAnalyzer:
     """Main dependency analyzer with security and health checks."""
@@ -283,7 +289,7 @@ class DependencyAnalyzer:
         )
 
     def _check_vulnerabilities(
-        self, package_name: str, version: str
+        self, package_name: str, version: Optional[str]
     ) -> List[VulnerabilityInfo]:
         """Check for known vulnerabilities in a package."""
         vulnerabilities = []
@@ -292,21 +298,31 @@ class DependencyAnalyzer:
         if package_name.lower() in self.KNOWN_VULNERABILITIES:
             for vuln_data in self.KNOWN_VULNERABILITIES[package_name.lower()]:
                 # Check if version is affected
-                if self._is_version_affected(version, vuln_data["affected_versions"]):
+                if self._is_version_affected(
+                    version, str(vuln_data["affected_versions"])
+                ):
                     vulnerability = VulnerabilityInfo(
-                        id=vuln_data["id"],
-                        severity=vuln_data["severity"],
-                        title=vuln_data["title"],
-                        description=vuln_data["description"],
-                        affected_versions=vuln_data["affected_versions"],
-                        patched_versions=vuln_data.get("patched_versions"),
+                        id=str(vuln_data["id"]),
+                        severity=(
+                            vuln_data["severity"]
+                            if isinstance(vuln_data["severity"], SecurityRisk)
+                            else SecurityRisk.MEDIUM
+                        ),
+                        title=str(vuln_data["title"]),
+                        description=str(vuln_data["description"]),
+                        affected_versions=str(vuln_data["affected_versions"]),
+                        patched_versions=(
+                            str(vuln_data.get("patched_versions"))
+                            if vuln_data.get("patched_versions") is not None
+                            else None
+                        ),
                     )
                     vulnerabilities.append(vulnerability)
 
         return vulnerabilities
 
     def _determine_health_status(
-        self, package_name: str, version: str, language: str
+        self, package_name: str, version: Optional[str], language: str
     ) -> DependencyHealth:
         """Determine the health status of a dependency."""
         # Check if deprecated
@@ -323,7 +339,9 @@ class DependencyAnalyzer:
 
         return DependencyHealth.HEALTHY
 
-    def _is_version_affected(self, current_version: str, affected_range: str) -> bool:
+    def _is_version_affected(
+        self, current_version: Optional[str], affected_range: str
+    ) -> bool:
         """Check if current version is affected by vulnerability."""
         if not current_version or current_version == "unknown":
             return True  # Assume vulnerable if version unknown
@@ -387,7 +405,7 @@ class DependencyAnalyzer:
             return -1 if version1 < version2 else (1 if version1 > version2 else 0)
 
     def _is_likely_outdated(
-        self, package_name: str, version: str, language: str
+        self, package_name: str, version: Optional[str], language: str
     ) -> bool:
         """Heuristic to determine if a package is likely outdated."""
         # This is a simplified heuristic
@@ -612,18 +630,18 @@ class DependencyAnalyzer:
 
             # Add dependencies as nodes and edges
             for dep in package_info.dependencies + package_info.dev_dependencies:
-                dep_node = {
-                    "id": f"{dep.name}@{dep.version}",
+                dep_node: Dict[str, str] = {
+                    "id": f"{dep.name}@{dep.version or 'unknown'}",
                     "name": dep.name,
                     "type": "dependency",
-                    "version": dep.version,
-                    "is_dev": dep.is_dev,
+                    "version": dep.version or "unknown",
+                    "is_dev": str(dep.is_dev),
                 }
                 nodes.append(dep_node)
 
                 edge = {
                     "from": package_info.file_path,
-                    "to": f"{dep.name}@{dep.version}",
+                    "to": f"{dep.name}@{dep.version or 'unknown'}",
                     "type": "depends_on",
                 }
                 edges.append(edge)
@@ -643,7 +661,7 @@ class DependencyAnalyzer:
     ) -> Dict:
         """Check license compatibility across dependencies."""
         license_issues = []
-        license_distribution = {}
+        license_distribution: Dict[str, int] = {}
 
         for report in reports:
             if report.license:

@@ -30,7 +30,7 @@ class TestPerformanceBenchmarks:
     @pytest.mark.performance
     def test_small_project_analysis_performance(self, tmp_path, benchmark):
         """Benchmark analysis performance on small projects."""
-        project_path = create_python_project(tmp_path, "small_project")
+        create_python_project(tmp_path, "small_project")
 
         def analyze_small_project():
             # This would call the actual analysis components
@@ -186,7 +186,7 @@ class TestPerformanceBenchmarks:
 
     def test_full_auto_pipeline_performance(self, tmp_path, benchmark):
         """Benchmark full auto pipeline performance."""
-        project_path = create_python_project(tmp_path, "pipeline_test")
+        create_python_project(tmp_path, "pipeline_test")
 
         with patch("airules.api_clients.AIClientFactory.get_client") as mock_get_client:
             mock_client = Mock()

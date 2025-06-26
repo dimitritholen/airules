@@ -410,9 +410,6 @@ services:
         assert "python" in tech_analysis.languages
 
         # Check framework categorization
-        build_tools = [f.name for f in tech_analysis.build_tools]
-        testing_frameworks = [f.name for f in tech_analysis.testing_frameworks]
-
         assert len(tech_analysis.build_tools) >= 1
         assert len(tech_analysis.testing_frameworks) >= 1
 

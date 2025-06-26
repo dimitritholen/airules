@@ -271,7 +271,7 @@ end
     <artifactId>test-project</artifactId>
     <version>1.0.0</version>
     <description>Test Java project</description>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.springframework</groupId>

@@ -1,9 +1,11 @@
 """Language detection from file extensions and content analysis."""
 
+from __future__ import annotations
+
 import re
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import DefaultDict, Dict, List, Optional
 
 from .models import LanguageInfo
 
@@ -241,7 +243,7 @@ class LanguageDetector:
             return []
 
         # Count files by language based on extensions
-        language_counts = defaultdict(int)
+        language_counts: DefaultDict[str, int] = defaultdict(int)
         language_extensions = defaultdict(set)
         language_files = defaultdict(list)
 
@@ -274,7 +276,7 @@ class LanguageDetector:
                 confidence = min(confidence * 1.2, 1.0)
 
             # Find primary extension (most common)
-            ext_counter = Counter()
+            ext_counter: Counter[str] = Counter()
             for file_path in language_files[lang]:
                 ext = Path(file_path).suffix.lower()
                 if ext:

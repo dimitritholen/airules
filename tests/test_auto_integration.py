@@ -346,6 +346,9 @@ class TestAutoFeatureComponents:
         """Test framework detection for Python projects."""
         project_path = create_python_project(tmp_path)
 
+        # Ensure the project was created successfully
+        assert project_path.exists()
+
         # Test would use the FrameworkDetector component
         # detector = FrameworkDetector()
         # frameworks = detector.detect_frameworks(project_path)
@@ -355,6 +358,9 @@ class TestAutoFeatureComponents:
     def test_framework_detection_react(self, tmp_path):
         """Test framework detection for React projects."""
         project_path = create_react_project(tmp_path)
+
+        # Ensure the project was created successfully
+        assert project_path.exists()
 
         # detector = FrameworkDetector()
         # frameworks = detector.detect_frameworks(project_path)
@@ -366,6 +372,9 @@ class TestAutoFeatureComponents:
         """Test dependency analysis for Python projects."""
         project_path = create_python_project(tmp_path)
 
+        # Ensure the project was created successfully
+        assert project_path.exists()
+
         # analyzer = DependencyAnalyzer()
         # dependencies = analyzer.analyze_dependencies(project_path)
         # assert "flask" in dependencies
@@ -374,6 +383,9 @@ class TestAutoFeatureComponents:
     def test_tag_generation_from_analysis(self, tmp_path):
         """Test tag generation based on project analysis."""
         project_path = create_python_project(tmp_path)
+
+        # Ensure the project was created successfully
+        assert project_path.exists()
 
         # tag_generator = TagGenerator()
         # tags = tag_generator.generate_tags(project_path)
@@ -385,6 +397,9 @@ class TestAutoFeatureComponents:
         """Test Python package file parsing."""
         project_path = create_python_project(tmp_path)
 
+        # Ensure the project was created successfully
+        assert project_path.exists()
+
         # parser = PackageParser()
         # requirements = parser.parse_requirements(project_path / "requirements.txt")
         # assert "flask" in [req.name for req in requirements]
@@ -393,6 +408,9 @@ class TestAutoFeatureComponents:
         """Test JavaScript package.json parsing."""
         project_path = create_react_project(tmp_path)
 
+        # Ensure the project was created successfully
+        assert project_path.exists()
+
         # parser = PackageParser()
         # package_info = parser.parse_package_json(project_path / "package.json")
         # assert "react" in package_info.dependencies
@@ -400,6 +418,9 @@ class TestAutoFeatureComponents:
     def test_package_parser_rust(self, tmp_path):
         """Test Rust Cargo.toml parsing."""
         project_path = create_rust_project(tmp_path)
+
+        # Ensure the project was created successfully
+        assert project_path.exists()
 
         # parser = PackageParser()
         # cargo_info = parser.parse_cargo_toml(project_path / "Cargo.toml")
@@ -451,6 +472,9 @@ class TestAutoFeatureErrorHandling:
     def test_insufficient_api_quota(self, tmp_path):
         """Test handling of API quota exceeded errors."""
         project_path = create_python_project(tmp_path)
+
+        # Ensure the project was created successfully
+        assert project_path.exists()
 
         with patch("airules.api_clients.AIClientFactory.get_client") as mock_get_client:
             from airules.exceptions import APIError

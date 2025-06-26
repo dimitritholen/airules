@@ -543,7 +543,7 @@ class TagGenerator:
         analysis_result: AnalysisResult,
     ) -> Dict[str, float]:
         """Calculate weighted scores for all tags."""
-        tag_scores = defaultdict(float)
+        tag_scores: Dict[str, float] = defaultdict(float)
 
         # Source weights
         source_weights = {

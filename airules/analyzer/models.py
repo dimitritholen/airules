@@ -1,7 +1,8 @@
 """Data models for codebase analysis results."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional, Set
+
 
 @dataclass
 class LanguageInfo:
@@ -14,6 +15,7 @@ class LanguageInfo:
     primary_extension: str
     sample_files: List[str]  # Sample file paths for this language
 
+
 @dataclass
 class ProjectStructure:
     """Information about project directory structure."""
@@ -22,17 +24,10 @@ class ProjectStructure:
     has_tests_dir: bool = False
     has_docs_dir: bool = False
     has_config_files: bool = False
-    test_directories: List[str] = None
-    source_directories: List[str] = None
-    config_files: List[str] = None
+    test_directories: List[str] = field(default_factory=list)
+    source_directories: List[str] = field(default_factory=list)
+    config_files: List[str] = field(default_factory=list)
 
-    def __post_init__(self):
-        if self.test_directories is None:
-            self.test_directories = []
-        if self.source_directories is None:
-            self.source_directories = []
-        if self.config_files is None:
-            self.config_files = []
 
 @dataclass
 class FileStats:
@@ -44,11 +39,8 @@ class FileStats:
     config_files: int = 0
     documentation_files: int = 0
     other_files: int = 0
-    largest_files: List[str] = None  # Paths to largest files
+    largest_files: List[str] = field(default_factory=list)  # Paths to largest files
 
-    def __post_init__(self):
-        if self.largest_files is None:
-            self.largest_files = []
 
 @dataclass
 class AnalysisResult:
@@ -60,11 +52,9 @@ class AnalysisResult:
     structure: ProjectStructure
     file_stats: FileStats
     framework_hints: List[str]  # Detected frameworks/libraries
-    error_messages: List[str] = None  # Any errors encountered during analysis
-
-    def __post_init__(self):
-        if self.error_messages is None:
-            self.error_messages = []
+    error_messages: List[str] = field(
+        default_factory=list
+    )  # Any errors encountered during analysis
 
     @property
     def is_empty_project(self) -> bool:
