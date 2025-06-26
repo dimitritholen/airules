@@ -11,9 +11,9 @@ authors = [
 description = "A universal CLI utility to configure AI rules files for any project."
 readme = "README.md"
 requires-python = ">=3.7"
+license = "MIT"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
 dependencies = [

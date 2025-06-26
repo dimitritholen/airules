@@ -13,3 +13,7 @@ flake8
 black
 mypy
 isort
+
+# Publishing tools
+build
+twine

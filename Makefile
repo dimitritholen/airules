@@ -1,6 +1,6 @@
 # Makefile for airules CLI
 
-.PHONY: venv install test lint lint-check lint-fix format type-check clean
+.PHONY: venv install test lint lint-check lint-fix format type-check publish publish-test clean
 
 venv:
 	python3 -m venv .venv
@@ -39,5 +39,14 @@ type-check:
 	@echo "🔍 Running type checks..."
 	. .venv/bin/activate && mypy airules
 
+# Publishing
+publish:
+	@echo "📦 Publishing to PyPI..."
+	./publish.sh
+
+publish-test:
+	@echo "📦 Publishing to TestPyPI..."
+	./publish.sh --test
+
 clean:
-	rm -rf .venv __pycache__ .pytest_cache .coverage .mypy_cache
+	rm -rf .venv __pycache__ .pytest_cache .coverage .mypy_cache dist build *.egg-info

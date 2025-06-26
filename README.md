@@ -3,6 +3,7 @@
 A universal CLI utility to configure AI rules files (e.g., .roo/rules, CLAUDE.md, .cursor/rules) for any project, based on the latest industry best practices via live Perplexity research.
 
 ## Features
+
 - Supports any language or framework via `--lang` and `--tags` options
 - Configures rules for tools like Cursor, Roo, Claude, and more
 - Uses live Perplexity API for up-to-date best practices
@@ -17,13 +18,34 @@ A universal CLI utility to configure AI rules files (e.g., .roo/rules, CLAUDE.md
 pip install rules4
 ```
 
+## Quick Start
+
+1. Initialize rules4 in your project:
+
+```bash
+rules4 init
+```
+
+2. Generate rules for your favorite AI coding assistant:
+
+```bash
+# For Cursor
+rules4 cursor --lang python --tags "testing,security"
+
+# For Claude with research
+rules4 claude --research --lang javascript --tags "react,typescript"
+
+# For all configured tools
+rules4 generate
+```
+
 ## API Keys and Environment Variables
 
 `rules4` interacts with various AI models and research services. To use these features, you need to set up the corresponding API keys as environment variables:
 
--   **OPENAI_API_KEY**: Required for generating rules using OpenAI models (e.g., `gpt-4-turbo`).
--   **ANTHROPIC_API_KEY**: Required if you use the `--review` flag with an Anthropic model (e.g., `claude-4-sonnet`).
--   **PERPLEXITY_API_KEY**: Required if you use the `--research` flag to perform research with Perplexity AI.
+- **OPENAI_API_KEY**: Required for generating rules using OpenAI models (e.g., `gpt-4-turbo`).
+- **ANTHROPIC_API_KEY**: Required if you use the `--review` flag with an Anthropic model (e.g., `claude-4-sonnet`).
+- **PERPLEXITY_API_KEY**: Required if you use the `--research` flag to perform research with Perplexity AI.
 
 Example (add to your shell profile, e.g., `~/.bashrc` or `~/.zshrc`):
 
@@ -44,6 +66,7 @@ rules4 copilot --lang python --tags "pytest,langgraph"
 ```
 
 This command will:
+
 - Use `gpt-4-turbo` as the primary model (default).
 - Generate rules for Python projects, focusing on `pytest` and `langgraph`.
 - Save the rules to `.github/copilot-python-pytest,langgraph.md` (or similar, depending on the tool).
@@ -57,6 +80,7 @@ rules4 copilot --primary gpt4.1 --review claude-4-sonnet --research --lang javas
 ```
 
 This command will:
+
 - Use `gpt4.1` as the primary model for rule generation.
 - Perform research using Perplexity AI before generating rules.
 - Have `claude-4-sonnet` review and refine the generated rules.
@@ -71,6 +95,7 @@ rules4 generate --lang go --tags "code style"
 ```
 
 This command will:
+
 - Read the list of tools from your `.rules4rc` file.
 - Generate rules for each tool, focusing on `code style` for Go projects.
 
@@ -89,3 +114,91 @@ This command will:
 
 This project is in early development. For contributions, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Publishing
+
+For maintainers, this project includes a comprehensive publishing system:
+
+### Prerequisites
+
+```bash
+# Install publishing dependencies
+pip install build twine
+
+# Set up API tokens
+export PYPI_API_TOKEN="your-pypi-token"           # For PyPI
+export TEST_PYPI_API_TOKEN="your-test-pypi-token" # For TestPyPI
+```
+
+### Publishing Commands
+
+```bash
+# Test publish (recommended first)
+./publish.sh --test --dry-run    # Preview what would be published to TestPyPI
+./publish.sh --test              # Publish to TestPyPI
+
+# Production publish
+./publish.sh --dry-run           # Preview what would be published to PyPI
+./publish.sh                     # Publish to PyPI
+
+# With version update
+./publish.sh --version 1.2.3     # Update version and publish
+```
+
+### Make Commands
+
+```bash
+make publish-test    # Publish to TestPyPI
+make publish         # Publish to PyPI
+```
+
+### Publishing Features
+
+The enhanced `publish.sh` script includes:
+
+- ✅ **Pre-flight checks**: Virtual environment, dependencies, API tokens
+- ✅ **Quality assurance**: Runs all tests and linting before publishing
+- ✅ **Version management**: Automatic version updates in both `pyproject.toml` and CLI
+- ✅ **Dual repositories**: Support for both PyPI and TestPyPI
+- ✅ **Safety features**: Dry-run mode, build validation, error handling
+- ✅ **User experience**: Colored output, progress indicators, helpful messages
+
+## Development
+
+### Setup
+
+```bash
+# Clone and setup
+git clone https://github.com/dimitritholen/airules.git
+cd airules
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Quality Assurance
+
+```bash
+make test         # Run tests
+make lint         # Run all linting checks
+make lint-fix     # Auto-fix formatting issues
+make format       # Format code with black
+make type-check   # Run mypy type checking
+```
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run `make test lint` to ensure quality
+5. Submit a pull request
+
+## Support
+
+- 📖 [Documentation](https://github.com/dimitritholen/airules)
+- 🐛 [Bug Reports](https://github.com/dimitritholen/airules/issues)
+- 💡 [Feature Requests](https://github.com/dimitritholen/airules/issues)
