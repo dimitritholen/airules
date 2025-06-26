@@ -196,23 +196,27 @@ class AutoCommandHandler:
             # Auto-detect project characteristics
             self.console.print_info("Analyzing project structure...")
             analysis_result = self.analyzer.analyze(project_path)
-            
+
             # Extract detected language and tags
-            detected_lang = analysis_result.primary_language.name if analysis_result.primary_language else None
+            detected_lang = (
+                analysis_result.primary_language.name
+                if analysis_result.primary_language
+                else None
+            )
             detected_tags = self.analyzer.get_recommended_tags(analysis_result)
-            
+
             # Show analysis results
             summary_parts = []
             if detected_lang:
                 summary_parts.append(f"Detected language: {detected_lang}")
             else:
                 summary_parts.append("Language: Unable to detect")
-                
+
             if detected_tags:
                 summary_parts.append(f"Detected tags: {', '.join(detected_tags)}")
             else:
                 summary_parts.append("Tags: None detected")
-                
+
             analysis_summary = " | ".join(summary_parts)
             self.console.print_info(f"Analysis: {analysis_summary}")
 
@@ -230,20 +234,35 @@ class AutoCommandHandler:
                 self.console.print_warning("No specific tags detected, using 'general'")
 
             # Show what will be generated
-            self.console.print_info(f"Generating with: language={final_lang}, tags={final_tags}")
+            self.console.print_info(
+                f"Generating with: language={final_lang}, tags={final_tags}"
+            )
 
             # Determine tools to process
             if tool:
                 # Single tool specified
                 self._process_single_tool(
-                    tool, primary, review, research, final_lang, final_tags, 
-                    dry_run, yes, project_path
+                    tool,
+                    primary,
+                    review,
+                    research,
+                    final_lang,
+                    final_tags,
+                    dry_run,
+                    yes,
+                    project_path,
                 )
             else:
                 # Process all configured tools
                 self._process_all_tools(
-                    primary, review, research, final_lang, final_tags, 
-                    dry_run, yes, project_path
+                    primary,
+                    review,
+                    research,
+                    final_lang,
+                    final_tags,
+                    dry_run,
+                    yes,
+                    project_path,
                 )
 
         except Exception as e:
@@ -264,12 +283,16 @@ class AutoCommandHandler:
     ) -> None:
         """Process a single tool with auto-detected characteristics."""
         supported_tools = {"cursor", "cline", "roo", "copilot", "claude"}
-        
-        if tool not in supported_tools:
-            raise Exception(f"Unsupported tool: {tool}. Supported tools: {', '.join(supported_tools)}")
 
-        self.console.print(f"Processing {tool.upper()} with auto-detected settings", style="bold")
-        
+        if tool not in supported_tools:
+            raise Exception(
+                f"Unsupported tool: {tool}. Supported tools: {', '.join(supported_tools)}"
+            )
+
+        self.console.print(
+            f"Processing {tool.upper()} with auto-detected settings", style="bold"
+        )
+
         self.pipeline_service.run_pipeline(
             tool=tool,
             primary_model=primary,
@@ -311,7 +334,7 @@ class AutoCommandHandler:
         )
 
         supported_tools = {"cursor", "cline", "roo", "copilot", "claude"}
-        
+
         for tool in tools:
             if tool not in supported_tools:
                 self.console.print_warning(
@@ -319,7 +342,9 @@ class AutoCommandHandler:
                 )
                 continue
 
-            self.console.print(f"\nProcessing {tool.upper()} with auto-detected settings", style="bold")
+            self.console.print(
+                f"\nProcessing {tool.upper()} with auto-detected settings", style="bold"
+            )
             self.pipeline_service.run_pipeline(
                 tool=tool,
                 primary_model=primary,

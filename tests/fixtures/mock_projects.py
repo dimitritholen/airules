@@ -9,7 +9,7 @@ def create_python_project(base_path: Path, project_name: str = "test_project") -
     """Create a mock Python project structure."""
     project_path = base_path / project_name
     project_path.mkdir(parents=True, exist_ok=True)
-    
+
     # Create requirements.txt
     requirements = [
         "flask==2.3.2",
@@ -19,9 +19,9 @@ def create_python_project(base_path: Path, project_name: str = "test_project") -
         "flake8==6.0.0",
     ]
     (project_path / "requirements.txt").write_text("\n".join(requirements))
-    
+
     # Create setup.py
-    setup_py = '''from setuptools import setup, find_packages
+    setup_py = """from setuptools import setup, find_packages
 
 setup(
     name="test_project",
@@ -34,11 +34,11 @@ setup(
     extras_require={
         "dev": ["pytest", "black", "flake8"],
     },
-)'''
+)"""
     (project_path / "setup.py").write_text(setup_py)
-    
+
     # Create pyproject.toml
-    pyproject_toml = '''[build-system]
+    pyproject_toml = """[build-system]
 requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
@@ -61,14 +61,14 @@ target-version = ['py38']
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-'''
+"""
     (project_path / "pyproject.toml").write_text(pyproject_toml)
-    
+
     # Create main module
     main_module = project_path / "src" / project_name
     main_module.mkdir(parents=True, exist_ok=True)
     (main_module / "__init__.py").write_text("")
-    
+
     main_py = '''"""Main module for test project."""
 
 from flask import Flask
@@ -83,12 +83,12 @@ if __name__ == "__main__":
     app.run(debug=True)
 '''
     (main_module / "main.py").write_text(main_py)
-    
+
     # Create tests directory
     tests_dir = project_path / "tests"
     tests_dir.mkdir(exist_ok=True)
     (tests_dir / "__init__.py").write_text("")
-    
+
     test_main = '''"""Tests for main module."""
 
 import pytest
@@ -106,9 +106,9 @@ def test_hello(client):
     assert rv.data == b'Hello, World!'
 '''
     (tests_dir / "test_main.py").write_text(test_main)
-    
+
     # Create .gitignore
-    gitignore = '''__pycache__/
+    gitignore = """__pycache__/
 *.py[cod]
 *$py.class
 *.so
@@ -140,9 +140,9 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
-'''
+"""
     (project_path / ".gitignore").write_text(gitignore)
-    
+
     return project_path
 
 
@@ -150,7 +150,7 @@ def create_django_project(base_path: Path, project_name: str = "django_test") ->
     """Create a mock Django project structure."""
     project_path = base_path / project_name
     project_path.mkdir(parents=True, exist_ok=True)
-    
+
     # Create requirements.txt
     requirements = [
         "Django==4.2.3",
@@ -161,7 +161,7 @@ def create_django_project(base_path: Path, project_name: str = "django_test") ->
         "pytest-django==4.5.2",
     ]
     (project_path / "requirements.txt").write_text("\n".join(requirements))
-    
+
     # Create manage.py
     manage_py = '''#!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
@@ -181,12 +181,12 @@ if __name__ == '__main__':
     execute_from_command_line(sys.argv)
 '''
     (project_path / "manage.py").write_text(manage_py)
-    
+
     # Create Django settings
     settings_dir = project_path / project_name
     settings_dir.mkdir(exist_ok=True)
     (settings_dir / "__init__.py").write_text("")
-    
+
     settings_py = '''"""Django settings for django_test project."""
 
 import os
@@ -236,12 +236,12 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 '''
     (settings_dir / "settings.py").write_text(settings_py)
-    
+
     # Create core app
     core_dir = project_path / "core"
     core_dir.mkdir(exist_ok=True)
     (core_dir / "__init__.py").write_text("")
-    
+
     models_py = '''"""Core models."""
 
 from django.db import models
@@ -255,7 +255,7 @@ class User(models.Model):
         return self.email
 '''
     (core_dir / "models.py").write_text(models_py)
-    
+
     return project_path
 
 
@@ -263,7 +263,7 @@ def create_react_project(base_path: Path, project_name: str = "react_test") -> P
     """Create a mock React project structure."""
     project_path = base_path / project_name
     project_path.mkdir(parents=True, exist_ok=True)
-    
+
     # Create package.json
     package_json = {
         "name": "react_test",
@@ -276,7 +276,7 @@ def create_react_project(base_path: Path, project_name: str = "react_test") -> P
             "axios": "^1.4.0",
             "@mui/material": "^5.14.1",
             "@emotion/react": "^11.11.1",
-            "@emotion/styled": "^11.11.0"
+            "@emotion/styled": "^11.11.0",
         },
         "devDependencies": {
             "@testing-library/jest-dom": "^5.16.5",
@@ -286,17 +286,17 @@ def create_react_project(base_path: Path, project_name: str = "react_test") -> P
             "@types/react-dom": "^18.2.7",
             "eslint": "^8.45.0",
             "prettier": "^3.0.0",
-            "typescript": "^5.1.6"
+            "typescript": "^5.1.6",
         },
         "scripts": {
             "start": "react-scripts start",
             "build": "react-scripts build",
             "test": "react-scripts test",
-            "eject": "react-scripts eject"
-        }
+            "eject": "react-scripts eject",
+        },
     }
     (project_path / "package.json").write_text(json.dumps(package_json, indent=2))
-    
+
     # Create tsconfig.json
     tsconfig = {
         "compilerOptions": {
@@ -313,18 +313,18 @@ def create_react_project(base_path: Path, project_name: str = "react_test") -> P
             "resolveJsonModule": True,
             "isolatedModules": True,
             "noEmit": True,
-            "jsx": "react-jsx"
+            "jsx": "react-jsx",
         },
-        "include": ["src"]
+        "include": ["src"],
     }
     (project_path / "tsconfig.json").write_text(json.dumps(tsconfig, indent=2))
-    
+
     # Create src directory
     src_dir = project_path / "src"
     src_dir.mkdir(exist_ok=True)
-    
+
     # Create App.tsx
-    app_tsx = '''import React from 'react';
+    app_tsx = """import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -354,14 +354,14 @@ function App() {
 }
 
 export default App;
-'''
+"""
     (src_dir / "App.tsx").write_text(app_tsx)
-    
+
     # Create components directory
     components_dir = src_dir / "components"
     components_dir.mkdir(exist_ok=True)
-    
-    home_tsx = '''import React from 'react';
+
+    home_tsx = """import React from 'react';
 import { Container, Typography, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 
@@ -382,9 +382,9 @@ const Home: React.FC = () => {
 };
 
 export default Home;
-'''
+"""
     (components_dir / "Home.tsx").write_text(home_tsx)
-    
+
     return project_path
 
 
@@ -392,7 +392,7 @@ def create_nextjs_project(base_path: Path, project_name: str = "nextjs_test") ->
     """Create a mock Next.js project structure."""
     project_path = base_path / project_name
     project_path.mkdir(parents=True, exist_ok=True)
-    
+
     # Create package.json
     package_json = {
         "name": "nextjs_test",
@@ -402,7 +402,7 @@ def create_nextjs_project(base_path: Path, project_name: str = "nextjs_test") ->
             "dev": "next dev",
             "build": "next build",
             "start": "next start",
-            "lint": "next lint"
+            "lint": "next lint",
         },
         "dependencies": {
             "next": "13.4.7",
@@ -411,20 +411,20 @@ def create_nextjs_project(base_path: Path, project_name: str = "nextjs_test") ->
             "@next/font": "13.4.7",
             "tailwindcss": "^3.3.3",
             "autoprefixer": "^10.4.14",
-            "postcss": "^8.4.24"
+            "postcss": "^8.4.24",
         },
         "devDependencies": {
             "typescript": "^5.1.6",
             "@types/react": "18.2.15",
             "@types/node": "20.4.5",
             "eslint": "8.45.0",
-            "eslint-config-next": "13.4.7"
-        }
+            "eslint-config-next": "13.4.7",
+        },
     }
     (project_path / "package.json").write_text(json.dumps(package_json, indent=2))
-    
+
     # Create next.config.js
-    next_config = '''/** @type {import('next').NextConfig} */
+    next_config = """/** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
     appDir: true,
@@ -432,15 +432,15 @@ const nextConfig = {
 }
 
 module.exports = nextConfig
-'''
+"""
     (project_path / "next.config.js").write_text(next_config)
-    
+
     # Create app directory (Next.js 13+ app router)
     app_dir = project_path / "app"
     app_dir.mkdir(exist_ok=True)
-    
+
     # Create layout.tsx
-    layout_tsx = '''import './globals.css'
+    layout_tsx = """import './globals.css'
 import { Inter } from 'next/font/google'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -461,11 +461,11 @@ export default function RootLayout({
     </html>
   )
 }
-'''
+"""
     (app_dir / "layout.tsx").write_text(layout_tsx)
-    
+
     # Create page.tsx
-    page_tsx = '''import Link from 'next/link'
+    page_tsx = """import Link from 'next/link'
 
 export default function Home() {
   return (
@@ -484,11 +484,11 @@ export default function Home() {
     </main>
   )
 }
-'''
+"""
     (app_dir / "page.tsx").write_text(page_tsx)
-    
+
     # Create tailwind.config.js
-    tailwind_config = '''/** @type {import('tailwindcss').Config} */
+    tailwind_config = """/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -500,9 +500,9 @@ module.exports = {
   },
   plugins: [],
 }
-'''
+"""
     (project_path / "tailwind.config.js").write_text(tailwind_config)
-    
+
     return project_path
 
 
@@ -510,9 +510,9 @@ def create_rust_project(base_path: Path, project_name: str = "rust_test") -> Pat
     """Create a mock Rust project structure."""
     project_path = base_path / project_name
     project_path.mkdir(parents=True, exist_ok=True)
-    
+
     # Create Cargo.toml
-    cargo_toml = '''[package]
+    cargo_toml = """[package]
 name = "rust_test"
 version = "0.1.0"
 edition = "2021"
@@ -528,15 +528,15 @@ thiserror = "1.0"
 
 [dev-dependencies]
 tokio-test = "0.4"
-'''
+"""
     (project_path / "Cargo.toml").write_text(cargo_toml)
-    
+
     # Create src directory
     src_dir = project_path / "src"
     src_dir.mkdir(exist_ok=True)
-    
+
     # Create main.rs
-    main_rs = '''use anyhow::Result;
+    main_rs = """use anyhow::Result;
 use clap::Parser;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -598,11 +598,11 @@ mod tests {
         assert_eq!(config.version, "1.0.0");
     }
 }
-'''
+"""
     (src_dir / "main.rs").write_text(main_rs)
-    
+
     # Create lib.rs
-    lib_rs = '''//! A simple Rust library for testing
+    lib_rs = """//! A simple Rust library for testing
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
@@ -671,9 +671,9 @@ mod tests {
         assert!(user.active);
     }
 }
-'''
+"""
     (src_dir / "lib.rs").write_text(lib_rs)
-    
+
     return project_path
 
 
@@ -681,7 +681,7 @@ def create_fastapi_project(base_path: Path, project_name: str = "fastapi_test") 
     """Create a mock FastAPI project structure."""
     project_path = base_path / project_name
     project_path.mkdir(parents=True, exist_ok=True)
-    
+
     # Create requirements.txt
     requirements = [
         "fastapi==0.100.0",
@@ -695,7 +695,7 @@ def create_fastapi_project(base_path: Path, project_name: str = "fastapi_test") 
         "pytest-asyncio==0.21.1",
     ]
     (project_path / "requirements.txt").write_text("\n".join(requirements))
-    
+
     # Create main.py
     main_py = '''"""FastAPI application main module."""
 
@@ -770,12 +770,12 @@ if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
 '''
     (project_path / "main.py").write_text(main_py)
-    
+
     # Create tests directory
     tests_dir = project_path / "tests"
     tests_dir.mkdir(exist_ok=True)
     (tests_dir / "__init__.py").write_text("")
-    
+
     # Create test_main.py
     test_main = '''"""Tests for FastAPI application."""
 
@@ -809,5 +809,5 @@ def test_get_users():
     assert isinstance(response.json(), list)
 '''
     (tests_dir / "test_main.py").write_text(test_main)
-    
+
     return project_path

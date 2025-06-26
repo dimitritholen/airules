@@ -3,8 +3,8 @@
 import os
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock
 from typing import Iterator
+from unittest.mock import Mock
 
 import pytest
 from typer.testing import CliRunner
@@ -59,12 +59,14 @@ def mock_api_responses():
     return {
         "research": "RESEARCH: Comprehensive analysis of the project structure and dependencies",
         "generation": "# Auto-Generated Rules\n\nThis project uses the following technologies:\n- Language: Python\n- Framework: Flask\n- Testing: pytest",
-        "validation": "# Validated Auto-Generated Rules\n\nImproved rules based on analysis:\n- Use Python 3.8+ features\n- Follow Flask best practices\n- Implement comprehensive testing with pytest"
+        "validation": "# Validated Auto-Generated Rules\n\nImproved rules based on analysis:\n- Use Python 3.8+ features\n- Follow Flask best practices\n- Implement comprehensive testing with pytest",
     }
 
 
 @pytest.fixture
-def mock_all_api_clients(mock_openai_client, mock_anthropic_client, mock_perplexity_client):
+def mock_all_api_clients(
+    mock_openai_client, mock_anthropic_client, mock_perplexity_client
+):
     """Mock all API clients."""
     return {
         "openai": mock_openai_client,
@@ -94,21 +96,15 @@ def mock_env_vars(monkeypatch, sample_env_vars):
 def pytest_configure(config):
     """Configure pytest with custom markers."""
     config.addinivalue_line(
-        "markers",
-        "integration: Integration tests that test the complete workflow"
+        "markers", "integration: Integration tests that test the complete workflow"
     )
     config.addinivalue_line(
-        "markers",
-        "performance: Performance and benchmarking tests"
+        "markers", "performance: Performance and benchmarking tests"
     )
     config.addinivalue_line(
-        "markers",
-        "error_handling: Error handling and edge case tests"
+        "markers", "error_handling: Error handling and edge case tests"
     )
-    config.addinivalue_line(
-        "markers",
-        "slow: Tests that take longer to run"
-    )
+    config.addinivalue_line("markers", "slow: Tests that take longer to run")
 
 
 def pytest_collection_modifyitems(config, items):
@@ -117,15 +113,15 @@ def pytest_collection_modifyitems(config, items):
         # Add integration marker to integration test files
         if "test_auto_integration" in item.nodeid:
             item.add_marker(pytest.mark.integration)
-        
+
         # Add performance marker to performance test files
         if "test_performance" in item.nodeid:
             item.add_marker(pytest.mark.performance)
-        
+
         # Add error_handling marker to error handling test files
         if "test_error_handling" in item.nodeid:
             item.add_marker(pytest.mark.error_handling)
-        
+
         # Add slow marker to performance tests
         if "test_performance" in item.nodeid or "benchmark" in item.name:
             item.add_marker(pytest.mark.slow)
@@ -138,7 +134,7 @@ def pytest_sessionstart(session):
     test_dir = Path(__file__).parent
     fixtures_dir = test_dir / "fixtures"
     fixtures_dir.mkdir(exist_ok=True)
-    
+
     # Set up any global test configuration
     os.environ.setdefault("TESTING", "1")
 

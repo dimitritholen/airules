@@ -1,8 +1,8 @@
 """Tag mapping rules and patterns for framework and technology detection."""
 
-from typing import Dict, List, Set, Tuple
-from .data_models import FrameworkCategory, ProjectType
+from typing import Dict, List
 
+from .data_models import ProjectType
 
 # Core framework-to-tags mappings
 FRAMEWORK_TAG_MAPPING: Dict[str, List[str]] = {
@@ -15,7 +15,6 @@ FRAMEWORK_TAG_MAPPING: Dict[str, List[str]] = {
     "nuxt.js": ["vue", "ssr", "routing", "full-stack", "auto-imports"],
     "gatsby": ["react", "static-site", "graphql", "performance", "pwa"],
     "astro": ["static-site", "components", "islands", "performance"],
-    
     # Backend Frameworks
     "express": ["node.js", "middleware", "rest-api", "web-server"],
     "fastapi": ["python", "async", "rest-api", "openapi", "type-hints"],
@@ -27,19 +26,16 @@ FRAMEWORK_TAG_MAPPING: Dict[str, List[str]] = {
     "asp.net": ["c#", "mvc", "web-api", "entity-framework"],
     "gin": ["go", "web-framework", "middleware", "rest-api"],
     "fiber": ["go", "web-framework", "fast", "express-inspired"],
-    
     # Mobile Frameworks
     "react-native": ["mobile", "cross-platform", "react", "native-modules"],
     "flutter": ["mobile", "cross-platform", "dart", "widgets"],
     "ionic": ["mobile", "hybrid", "web-technologies", "capacitor"],
     "xamarin": ["mobile", "cross-platform", "c#", "native-api"],
-    
     # Desktop Frameworks
     "electron": ["desktop", "cross-platform", "web-technologies", "node.js"],
     "tauri": ["desktop", "rust", "web-frontend", "lightweight"],
     "qt": ["desktop", "cross-platform", "c++", "gui"],
     "tkinter": ["desktop", "python", "gui", "built-in"],
-    
     # Databases
     "postgresql": ["database", "relational", "sql", "acid"],
     "mysql": ["database", "relational", "sql", "web-development"],
@@ -47,7 +43,6 @@ FRAMEWORK_TAG_MAPPING: Dict[str, List[str]] = {
     "redis": ["database", "in-memory", "cache", "key-value"],
     "sqlite": ["database", "embedded", "sql", "lightweight"],
     "elasticsearch": ["search", "analytics", "distributed", "full-text"],
-    
     # Testing Frameworks
     "jest": ["testing", "unit-tests", "mocking", "javascript"],
     "pytest": ["testing", "unit-tests", "fixtures", "python"],
@@ -56,7 +51,6 @@ FRAMEWORK_TAG_MAPPING: Dict[str, List[str]] = {
     "selenium": ["testing", "e2e", "cross-browser", "automation"],
     "junit": ["testing", "unit-tests", "java", "assertions"],
     "rspec": ["testing", "bdd", "ruby", "readable"],
-    
     # Build Tools and Bundlers
     "webpack": ["bundler", "module-federation", "asset-optimization"],
     "vite": ["bundler", "dev-server", "fast", "esbuild"],
@@ -64,19 +58,16 @@ FRAMEWORK_TAG_MAPPING: Dict[str, List[str]] = {
     "parcel": ["bundler", "zero-config", "web-applications"],
     "gulp": ["task-runner", "streaming", "build-automation"],
     "grunt": ["task-runner", "configuration", "build-automation"],
-    
     # State Management
     "redux": ["state-management", "predictable", "flux-pattern"],
     "vuex": ["state-management", "vue", "centralized"],
     "mobx": ["state-management", "reactive", "observable"],
     "zustand": ["state-management", "lightweight", "react"],
-    
     # Styling
     "tailwindcss": ["css", "utility-first", "responsive", "customizable"],
     "bootstrap": ["css", "responsive", "components", "grid-system"],
     "sass": ["css", "preprocessor", "variables", "nesting"],
     "styled-components": ["css-in-js", "react", "component-scoped"],
-    
     # DevOps and Deployment
     "docker": ["containerization", "deployment", "microservices"],
     "kubernetes": ["orchestration", "containers", "scalability"],
@@ -84,20 +75,17 @@ FRAMEWORK_TAG_MAPPING: Dict[str, List[str]] = {
     "ansible": ["configuration-management", "automation", "idempotent"],
     "jenkins": ["ci-cd", "automation", "pipelines"],
     "github-actions": ["ci-cd", "workflows", "automation"],
-    
     # Cloud Platforms
     "aws": ["cloud", "scalability", "managed-services"],
     "azure": ["cloud", "microsoft", "enterprise"],
     "gcp": ["cloud", "google", "machine-learning"],
     "vercel": ["deployment", "frontend", "serverless"],
     "netlify": ["deployment", "jamstack", "cdn"],
-    
     # Authentication
     "auth0": ["authentication", "sso", "oauth", "managed-service"],
     "firebase-auth": ["authentication", "google", "social-login"],
     "passport": ["authentication", "node.js", "strategies"],
     "oauth": ["authentication", "authorization", "third-party"],
-    
     # Monitoring and Analytics
     "sentry": ["error-tracking", "monitoring", "debugging"],
     "datadog": ["monitoring", "apm", "infrastructure"],
@@ -182,21 +170,37 @@ DIRECTORY_TAGS: Dict[str, List[str]] = {
 # Tag priorities for ranking
 TAG_PRIORITIES: Dict[str, int] = {
     # High priority - core technology tags
-    "react": 10, "vue": 10, "angular": 10, "django": 10, "flask": 10,
-    "express": 10, "fastapi": 10, "spring-boot": 10, "next.js": 10,
-    
-    # Medium-high priority - important architectural tags  
-    "rest-api": 9, "microservices": 9, "database": 9, "testing": 9,
-    "containerization": 9, "ci-cd": 9, "authentication": 9,
-    
+    "react": 10,
+    "vue": 10,
+    "angular": 10,
+    "django": 10,
+    "flask": 10,
+    "express": 10,
+    "fastapi": 10,
+    "spring-boot": 10,
+    "next.js": 10,
+    # Medium-high priority - important architectural tags
+    "rest-api": 9,
+    "microservices": 9,
+    "database": 9,
+    "testing": 9,
+    "containerization": 9,
+    "ci-cd": 9,
+    "authentication": 9,
     # Medium priority - development practices
-    "components": 8, "typescript": 8, "unit-tests": 8, "security": 8,
-    "performance": 8, "responsive": 8, "scalable": 8,
-    
+    "components": 8,
+    "typescript": 8,
+    "unit-tests": 8,
+    "security": 8,
+    "performance": 8,
+    "responsive": 8,
+    "scalable": 8,
     # Lower priority - supplementary tags
-    "utilities": 6, "configuration": 6, "documentation": 6,
-    "assets": 5, "static-files": 5,
-    
+    "utilities": 6,
+    "configuration": 6,
+    "documentation": 6,
+    "assets": 5,
+    "static-files": 5,
     # Default priority for unspecified tags
 }
 
