@@ -17,6 +17,22 @@ A universal CLI utility to configure AI rules files (e.g., .roo/rules, CLAUDE.md
 pip install rules4
 ```
 
+## API Keys and Environment Variables
+
+`rules4` interacts with various AI models and research services. To use these features, you need to set up the corresponding API keys as environment variables:
+
+-   **OPENAI_API_KEY**: Required for generating rules using OpenAI models (e.g., `gpt-4-turbo`).
+-   **ANTHROPIC_API_KEY**: Required if you use the `--review` flag with an Anthropic model (e.g., `claude-4-sonnet`).
+-   **PERPLEXITY_API_KEY**: Required if you use the `--research` flag to perform research with Perplexity AI.
+
+Example (add to your shell profile, e.g., `~/.bashrc` or `~/.zshrc`):
+
+```bash
+export OPENAI_API_KEY="your_openai_api_key"
+export ANTHROPIC_API_KEY="your_anthropic_api_key"
+export PERPLEXITY_API_KEY="your_perplexity_api_key"
+```
+
 ## Usage
 
 ### Basic Rule Generation
