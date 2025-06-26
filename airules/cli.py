@@ -14,7 +14,7 @@ from rich.console import Console
 from .config import create_default_config, get_config, get_config_path
 from .venv_check import in_virtualenv
 
-app = typer.Typer(help="A CLI to generate AI coding assistant rules for your project.")
+app = typer.Typer(help="A CLI to generate AI coding assistant rules for your project (rules4).")
 
 @app.callback(invoke_without_command=True)
 def main(ctx: typer.Context):
@@ -220,11 +220,11 @@ def init():
         raise typer.Exit(code=1)
     
     if get_config_path().exists():
-        console.print("[yellow]✓ .airulesrc already exists.[/yellow]")
+        console.print("[yellow]✓ .rules4rc already exists.[/yellow]")
         return
     
     create_default_config()
-    console.print("[bold green]✓ Created default .airulesrc.[/bold green]")
+    console.print("[bold green]✓ Created default .rules4rc.[/bold green]")
 
 
 def run_generation_pipeline(tool: str, primary_model: str, research: bool, review_model: Optional[str], dry_run: bool, yes: bool, project_path: str, lang: Optional[str] = None, tags: Optional[str] = None):
@@ -239,7 +239,7 @@ def run_generation_pipeline(tool: str, primary_model: str, research: bool, revie
         current_tags_str = tags if tags else config.get('settings', 'tags', fallback='security')
         current_tags = [tag.strip() for tag in current_tags_str.split(',')]
     except FileNotFoundError:
-        console.print("[bold red]✗ No .airulesrc file found. Please run 'airules init' first.[/bold red]")
+        console.print("[bold red]✗ No .rules4rc file found. Please run 'rules4 init' first.[/bold red]")
         raise typer.Exit(code=1)
 
     has_errors = False
@@ -341,7 +341,7 @@ def generate(
             )
             
     except FileNotFoundError:
-        console.print("[bold red]✗ No .airulesrc file found. Please run 'airules init' first.[/bold red]")
+        console.print("[bold red]✗ No .rules4rc file found. Please run 'rules4 init' first.[/bold red]")
         raise typer.Exit(code=1)
         
 

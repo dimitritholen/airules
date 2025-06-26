@@ -1,4 +1,4 @@
-# airules
+# rules4
 
 A universal CLI utility to configure AI rules files (e.g., .roo/rules, CLAUDE.md, .cursor/rules) for any project, based on the latest industry best practices via live Perplexity research.
 
@@ -11,37 +11,65 @@ A universal CLI utility to configure AI rules files (e.g., .roo/rules, CLAUDE.md
 - Simple one-command install (packaged for PyPI)
 - Designed for future MCP integration
 
-## Quickstart
+## Installation
 
 ```bash
-# Create and activate a virtual environment (required)
-python3 -m venv .venv
-source .venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the CLI (auto-detects project context if possible)
-python -m airules.cli --lang python --tool cursor --tags langgraph,langchain,pytest
-
-# Run tests
-make test
+pip install rules4
 ```
 
-## Options
-- `--lang <language>`: Programming language (e.g., python, javascript)
-- `--tool <tool>`: Which rules file/tool to configure (e.g., cursor, roo, claude)
-- `--tags <tag1,tag2,...>`: Comma-separated list of frameworks/libraries
-- `--dry-run`: Show what would be changed without writing files
-- `--yes`, `-y`: Overwrite files without prompting
-- `--project-path <path>`: (Optional) Target project directory
+## Usage
 
-## Development
-- Code files are kept short and simple
-- Tests and >85% coverage are required
-- All lint and security issues must be fixed
-- ALWAYS use a virtual environment for all development and usage
+### Basic Rule Generation
+
+To generate rules for a specific tool (e.g., `copilot`) for a given language and tags:
+
+```bash
+rules4 copilot --lang python --tags "pytest,langgraph"
+```
+
+This command will:
+- Use `gpt-4-turbo` as the primary model (default).
+- Generate rules for Python projects, focusing on `pytest` and `langgraph`.
+- Save the rules to `.github/copilot-python-pytest,langgraph.md` (or similar, depending on the tool).
+
+### Advanced Usage
+
+You can specify a primary model, a review model, and enable research:
+
+```bash
+rules4 copilot --primary gpt4.1 --review claude-4-sonnet --research --lang javascript --tags "react,typescript"
+```
+
+This command will:
+- Use `gpt4.1` as the primary model for rule generation.
+- Perform research using Perplexity AI before generating rules.
+- Have `claude-4-sonnet` review and refine the generated rules.
+- Generate rules for JavaScript projects, focusing on `react` and `typescript`.
+
+### Generating Rules for All Configured Tools
+
+If you have a `.rules4rc` file configured, you can generate rules for all specified tools:
+
+```bash
+rules4 generate --lang go --tags "code style"
+```
+
+This command will:
+- Read the list of tools from your `.rules4rc` file.
+- Generate rules for each tool, focusing on `code style` for Go projects.
+
+### Command-Line Options
+
+- `--primary <model_name>`: Specify the primary AI model for rule generation (e.g., `gpt-4-turbo`, `gpt4.1`).
+- `--review <model_name>`: Specify an AI model for reviewing and refining the generated rules (e.g., `claude-4-sonnet`).
+- `--research`: Enable research using Perplexity AI before rule generation.
+- `--lang <language>`: Specify the programming language for rule generation (e.g., `python`, `javascript`, `go`).
+- `--tags <tag1,tag2,...>`: Comma-separated list of tags or topics for rule generation (e.g., `pytest,langgraph`, `react,typescript`, `code style`).
+- `--dry-run`: Preview the changes without actually writing any files.
+- `--yes`, `-y`: Overwrite existing files without prompting for confirmation.
+- `--project-path <path>`: (Optional) Specify the target project directory. Defaults to the current directory.
 
 ---
 
-This project is in early development. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+This project is in early development. For contributions, see [CONTRIBUTING.md](CONTRIBUTING.md).
+

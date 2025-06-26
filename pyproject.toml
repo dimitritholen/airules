@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "airules"
-version = "0.0.1"
+name = "rules4"
+version = "0.0.2"
 authors = [
   { name="Dimitri Tholen", email="scriptdude@gmail.com" },
 ]
@@ -32,4 +32,4 @@ dependencies = [
 "Bug Tracker" = "https://github.com/dimitritholen/airules/issues"
 
 [project.scripts]
-airules = "airules.cli:app"
+rules4 = "airules.cli:app"
