@@ -368,21 +368,32 @@ def run_generation_pipeline(
         )
         raise typer.Exit(code=1)
 
-    try:
-        config = get_config()
-        # Use provided lang and tags, or fallback to config
-        current_lang = (
-            lang if lang else config.get("settings", "language", fallback="python")
-        )
-        current_tags_str = (
-            tags if tags else config.get("settings", "tags", fallback="security")
-        )
+    # Check if we have required parameters or need to load config
+    if lang and tags:
+        # All required parameters provided, no config needed
+        current_lang = lang
+        current_tags_str = tags
         current_tags = [tag.strip() for tag in current_tags_str.split(",")]
-    except FileNotFoundError:
-        console.print(
-            "[bold red]✗ No .rules4rc file found. Please run 'rules4 init' first.[/bold red]"
-        )
-        raise typer.Exit(code=1)
+    else:
+        # Need to load config for missing parameters
+        try:
+            config = get_config()
+            # Use provided lang and tags, or fallback to config
+            current_lang = (
+                lang if lang else config.get("settings", "language", fallback="python")
+            )
+            current_tags_str = (
+                tags if tags else config.get("settings", "tags", fallback="security")
+            )
+            current_tags = [tag.strip() for tag in current_tags_str.split(",")]
+        except FileNotFoundError:
+            console.print(
+                "[bold red]✗ No .rules4rc file found. Please run 'rules4 init' first,[/bold red]"
+            )
+            console.print(
+                "[yellow]or provide both --lang and --tags parameters.[/yellow]"
+            )
+            raise typer.Exit(code=1)
 
     has_errors = False
     for tag_item in current_tags:
