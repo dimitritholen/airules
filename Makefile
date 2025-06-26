@@ -1,15 +1,37 @@
 # Makefile for airules CLI
 
-.PHONY: venv install test lint lint-check lint-fix format type-check publish publish-test clean
+.PHONY: venv install test test-integration test-performance test-error-handling test-coverage test-all lint lint-check lint-fix format type-check publish publish-test clean
 
 venv:
 	python3 -m venv .venv
 
 install: venv
-	. .venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt
+	. .venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt && pip install pytest-benchmark
 
+# Run all tests with 90% coverage requirement
 test:
-	. .venv/bin/activate && PYTHONPATH=. pytest --maxfail=1 --disable-warnings --cov=airules --cov-report=term-missing
+	. .venv/bin/activate && PYTHONPATH=. pytest --cov-fail-under=90
+
+# Run only integration tests
+test-integration:
+	. .venv/bin/activate && PYTHONPATH=. pytest tests/test_auto_integration.py -v -m integration
+
+# Run only performance tests
+test-performance:
+	. .venv/bin/activate && PYTHONPATH=. pytest tests/test_performance.py -v -m performance --benchmark-only
+
+# Run only error handling tests
+test-error-handling:
+	. .venv/bin/activate && PYTHONPATH=. pytest tests/test_error_handling.py -v -m error_handling
+
+# Generate detailed coverage report
+test-coverage:
+	. .venv/bin/activate && PYTHONPATH=. pytest --cov=airules --cov-report=html --cov-report=term-missing --cov-fail-under=90
+	@echo "Coverage report generated in htmlcov/index.html"
+
+# Run all test suites including performance benchmarks
+test-all:
+	. .venv/bin/activate && PYTHONPATH=. pytest --cov=airules --cov-report=html --cov-report=term-missing --cov-fail-under=90 --benchmark-skip
 
 # Comprehensive linting
 lint: lint-check type-check

@@ -1,5 +1,6 @@
 pytest
 pytest-cov
+pytest-benchmark
 requests
 openai
 anthropic
@@ -7,6 +8,10 @@ typer[all]
 rich
 
 trio
+
+# Dependencies for analyzer module
+toml
+pyyaml
 
 # Linting and formatting tools
 flake8
