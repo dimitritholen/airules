@@ -14,22 +14,46 @@ from rich.console import Console
 from .config import create_default_config, get_config, get_config_path
 from .venv_check import in_virtualenv
 
-app = typer.Typer(help="""A CLI to generate AI coding assistant rules for your project (rules4).
+app = typer.Typer(help="""[bold blue]A CLI to generate AI coding assistant rules for your project (rules4)[/bold blue]
 
-Examples:
-  Generate Python rules for Copilot focusing on pytest and langgraph:
-    rules4 copilot --primary gpt4.1 --lang python --tags "pytest,langgraph"
+[bold yellow]🚀 Quick Start Examples:[/bold yellow]
 
-  Generate JavaScript rules for Copilot, perform research first, and have Claude-4-sonnet review:
-    rules4 copilot --lang javascript --research --review claude-4-sonnet
+[bold cyan]1. Generate Python rules for Copilot[/bold cyan]
+   Focus on specific topics like pytest and langgraph:
+   [dim]$[/dim] [bold green]rules4 copilot[/bold green] --primary gpt-4-turbo --lang python --tags "pytest,langgraph"
 
-  Generate rules for all configured tools (from .rules4rc) for a Go project, focusing on code style:
-    rules4 generate --lang go --tags "code style"
+[bold cyan]2. Research-backed JavaScript rules[/bold cyan]
+   Perform research first, then have Claude review the output:
+   [dim]$[/dim] [bold green]rules4 copilot[/bold green] --lang javascript --research --review claude-3-5-sonnet-20241022
+
+[bold cyan]3. Generate rules for all configured tools[/bold cyan]
+   Use settings from .rules4rc for a Go project:
+   [dim]$[/dim] [bold green]rules4 generate[/bold green] --lang go --tags "code style,testing"
+
+[bold cyan]4. Preview changes without writing files[/bold cyan]
+   Use dry-run to see what would be generated:
+   [dim]$[/dim] [bold green]rules4 cursor[/bold green] --lang typescript --tags "react,hooks" --dry-run
+
+[bold yellow]💡 Pro Tips:[/bold yellow]
+• Run [bold]rules4 init[/bold] first to create a .rules4rc config file
+• Use [bold]--research[/bold] for more informed rule generation
+• Combine multiple tags with commas: [bold]--tags "security,performance,testing"[/bold]
+• Available tools: cursor, cline, roo, copilot, claude
 """)
 
 @app.callback(invoke_without_command=True)
 def main(ctx: typer.Context):
-    """A CLI to generate AI coding assistant rules for your project."""
+    """[bold blue]A CLI to generate AI coding assistant rules for your project[/bold blue]
+    
+    Generate customized rules for popular AI coding assistants like Cursor, Cline, 
+    Roo, GitHub Copilot, and Claude. Supports research-backed rule generation and 
+    multi-model review processes.
+    
+    [bold yellow]Getting Started:[/bold yellow]
+    1. Run [bold green]rules4 init[/bold green] to create a configuration file
+    2. Set your API keys in environment variables
+    3. Generate rules with [bold green]rules4 <tool>[/bold green] or [bold green]rules4 generate[/bold green]
+    """
     if ctx.invoked_subcommand is None:
         console.print(ctx.get_help())
 
@@ -225,7 +249,15 @@ def write_rules_file(filepath: Path, content: str, dry_run: bool, yes: bool, too
 
 @app.command()
 def init():
-    """Initializes a default .rules4rc file in the current directory."""
+    """[bold green]Initialize a new .rules4rc configuration file[/bold green]
+    
+    Creates a default configuration file in the current directory with:
+    • Default language and tool settings
+    • Customizable tags for rule generation
+    • Environment variable references for API keys
+    
+    [dim]Must be run inside a virtual environment for safety.[/dim]
+    """
     if not in_virtualenv():
         console.print("[bold red]✗ This command must be run in a virtual environment.[/bold red]")
         raise typer.Exit(code=1)
@@ -321,7 +353,18 @@ def generate(
     yes: bool = typer.Option(False, "-y", "--yes", help="Overwrite files without prompting."),
     project_path: str = typer.Option(".", help="Target project directory.")
 ):
-    """Generate rules for all tools configured in .rules4rc."""
+    """[bold green]Generate rules for all tools configured in .rules4rc[/bold green]
+    
+    Processes all tools specified in your configuration file and generates
+    appropriate rules for each one. This is the most efficient way to set up
+    rules for multiple AI coding assistants at once.
+    
+    [bold yellow]Features:[/bold yellow]
+    • Batch processing for multiple tools
+    • Respects .rules4rc configuration settings
+    • Supports research-backed generation
+    • Optional Claude review for quality assurance
+    """
     if not in_virtualenv():
         console.print("[bold red]✗ This command must be run in a virtual environment.[/bold red]")
         raise typer.Exit(code=1)
