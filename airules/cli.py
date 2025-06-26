@@ -14,7 +14,18 @@ from rich.console import Console
 from .config import create_default_config, get_config, get_config_path
 from .venv_check import in_virtualenv
 
-app = typer.Typer(help="A CLI to generate AI coding assistant rules for your project (rules4).")
+app = typer.Typer(help="""A CLI to generate AI coding assistant rules for your project (rules4).
+
+Examples:
+  Generate Python rules for Copilot focusing on pytest and langgraph:
+    rules4 copilot --primary gpt4.1 --lang python --tags "pytest,langgraph"
+
+  Generate JavaScript rules for Copilot, perform research first, and have Claude-4-sonnet review:
+    rules4 copilot --lang javascript --research --review claude-4-sonnet
+
+  Generate rules for all configured tools (from .rules4rc) for a Go project, focusing on code style:
+    rules4 generate --lang go --tags "code style"
+""")
 
 @app.callback(invoke_without_command=True)
 def main(ctx: typer.Context):
