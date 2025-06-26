@@ -176,7 +176,7 @@ def research_with_perplexity(lang: str, tag: str) -> str:
     prompt = f"Provide a detailed, up-to-date summary of best practices for '{tag}' in a '{lang}' project. Focus on actionable rules and configurations."
 
     response = client.chat.completions.create(
-        model="llama-3-sonar-large-32k-online",
+        model="sonar-pro",
         messages=[
             {
                 "role": "system",
