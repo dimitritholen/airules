@@ -12,10 +12,16 @@ import typer
 from rich.console import Console
 
 from .config import create_default_config, get_config, get_config_path
-from .tui import ConfigTUI
 from .venv_check import in_virtualenv
 
 app = typer.Typer(help="A CLI to generate AI coding assistant rules for your project.")
+
+@app.callback(invoke_without_command=True)
+def main(ctx: typer.Context):
+    """A CLI to generate AI coding assistant rules for your project."""
+    if ctx.invoked_subcommand is None:
+        console.print(ctx.get_help())
+
 console = Console()
 error_console = Console(stderr=True)
 
@@ -289,11 +295,46 @@ for tool in ["cursor", "cline", "roo", "copilot", "claude"]:
     app.command(name=tool, help=f"Generate rules for {tool.capitalize()}.")(_create_command(tool))
 
 @app.command()
-def config():
-    """Open an interactive TUI to configure .airulesrc."""
-    tui = ConfigTUI()
-    tui.run()
-
+def generate(
+    primary: str = typer.Option("gpt-4-turbo", "--primary", help="Primary model for rule generation."),
+    review: Optional[str] = typer.Option(None, "--review", help="Review model for refinement."),
+    research: bool = typer.Option(False, "--research", help="Perform research with Perplexity first."),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Preview changes without writing files."),
+    yes: bool = typer.Option(False, "-y", "--yes", help="Overwrite files without prompting."),
+    project_path: str = typer.Option(".", help="Target project directory.")
+):
+    """Generate rules for all tools configured in .airulesrc."""
+    if not in_virtualenv():
+        console.print("[bold red]✗ This command must be run in a virtual environment.[/bold red]")
+        raise typer.Exit(code=1)
+        
+    try:
+        config = get_config()
+        tools_str = config.get('settings', 'tools', fallback='roo')
+        tools = [tool.strip() for tool in tools_str.split(',')]
+        
+        console.print(f"[bold blue]Generating rules for {len(tools)} tool(s): {', '.join(tools)}[/bold blue]")
+        
+        for tool in tools:
+            if tool not in ["cursor", "cline", "roo", "copilot", "claude"]:
+                console.print(f"[yellow]Warning: Unsupported tool '{tool}' in config. Skipping.[/yellow]")
+                continue
+                
+            console.print(f"[bold]\nProcessing {tool.upper()}[/bold]")
+            run_generation_pipeline(
+                tool=tool,
+                primary_model=primary,
+                research=research,
+                review_model=review,
+                dry_run=dry_run,
+                yes=yes,
+                project_path=project_path
+            )
+            
+    except FileNotFoundError:
+        console.print("[bold red]✗ No .airulesrc file found. Please run 'airules init' first.[/bold red]")
+        raise typer.Exit(code=1)
+        
 
 if __name__ == "__main__":
     app()

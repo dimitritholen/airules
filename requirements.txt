@@ -5,5 +5,5 @@ openai
 anthropic
 typer[all]
 rich
-textual
+
 trio
