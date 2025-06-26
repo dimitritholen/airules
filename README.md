@@ -6,16 +6,19 @@ A universal CLI utility to configure AI rules files (e.g., .roo/rules, CLAUDE.md
 
 ## Features
 
-- Supports any language or framework via `--lang` and `--tags` options
-- Configures rules for tools like Cursor, Roo, Claude, and more
-- Flexible model selection: Use OpenAI or Anthropic models for both generation and review
-- Mix and match models: e.g., Claude for generation, GPT-4 for review
-- Uses live Perplexity API for up-to-date best practices
-- Built-in `--list-models` command to see all available models
-- Dry-run mode to preview changes
-- Prompts before overwriting existing files
-- Simple one-command install (packaged for PyPI)
-- Designed for future MCP integration
+- **🔍 Automatic Project Analysis**: `rules4 auto` intelligently detects your project's language, frameworks, and generates appropriate tags
+- **🎯 Smart Detection**: Supports 50+ programming languages and 50+ frameworks (React, Django, FastAPI, etc.)
+- **⚡ Zero Configuration**: Works out-of-the-box without manual setup - just run `rules4 auto`
+- **🛠️ Manual Control**: Override auto-detection with `--lang` and `--tags` options when needed
+- **🤖 Multi-Tool Support**: Configures rules for Cursor, Roo, Claude, Copilot, and Cline
+- **🔄 Flexible Model Selection**: Use OpenAI or Anthropic models for both generation and review
+- **🔀 Mix and Match**: e.g., Claude for generation, GPT-4 for review
+- **🔬 Live Research**: Uses Perplexity API for up-to-date best practices
+- **📋 Model Discovery**: Built-in `--list-models` command to see all available models
+- **👀 Preview Mode**: Dry-run mode to preview changes before writing
+- **⚠️ Safe Defaults**: Prompts before overwriting existing files
+- **📦 Easy Install**: Simple one-command install (packaged for PyPI)
+- **🔮 Future Ready**: Designed for MCP integration
 
 ## Program Flow
 
@@ -48,7 +51,27 @@ pip install rules4
 
 ## Quick Start
 
-Generate rules for your favorite AI coding assistant directly:
+### 🚀 The Smart Way (Recommended)
+
+Let rules4 automatically analyze your project and generate intelligent rules:
+
+```bash
+# Automatically detect language, frameworks, and generate rules for all tools
+rules4 auto
+
+# Auto-detect with research for cutting-edge best practices
+rules4 auto --research
+
+# Auto-detect for a specific tool
+rules4 auto cursor
+
+# Auto-detect with model selection
+rules4 auto --primary gpt-4-turbo --review claude-3-5-sonnet-20241022
+```
+
+### 🎯 The Manual Way
+
+Or specify everything manually for precise control:
 
 ```bash
 # For Cursor
@@ -61,13 +84,15 @@ rules4 claude --research --lang javascript --tags "react,typescript"
 rules4 generate
 ```
 
-**Optional**: Initialize a configuration file for your project to set defaults:
+### ⚙️ Configuration (Optional)
+
+Initialize a configuration file for your project to set defaults:
 
 ```bash
 rules4 init
 ```
 
-This creates a `.rules4rc` file with default settings, allowing you to use `rules4 generate` to build rules for all configured tools at once.
+This creates a `.rules4rc` file with default settings for batch operations.
 
 ## API Keys and Environment Variables
 
@@ -122,6 +147,60 @@ These commands demonstrate the flexibility:
 - The same model can be used for both primary generation and review
 - Research always uses Perplexity's `sonar-pro` model
 
+### 🤖 Automatic Project Analysis (`rules4 auto`)
+
+The auto command is the smartest way to generate rules. It analyzes your project structure and automatically determines the best settings:
+
+#### **What It Detects:**
+
+**Languages (50+):**
+- Python, JavaScript, TypeScript, Java, Go, Rust, C#, PHP, Ruby, C++, Swift, Kotlin, Dart, Elixir, Scala, Clojure, Haskell, R, Julia, and more...
+
+**Frameworks & Libraries (50+):**
+- **Frontend**: React, Vue, Angular, Svelte, Next.js, Nuxt.js
+- **Backend**: Django, Flask, FastAPI, Express, Spring Boot, ASP.NET, Laravel  
+- **Mobile**: React Native, Flutter, Ionic, Xamarin
+- **Testing**: Jest, pytest, Mocha, Cypress, Selenium
+- **Build Tools**: webpack, Vite, Rollup, Parcel, Cargo, Maven, Gradle
+
+**Smart Tags Generated:**
+- **Architecture**: microservices, monolith, serverless, api
+- **Development**: testing, security, performance, documentation
+- **Technologies**: database, web-development, mobile, machine-learning
+- **Practices**: ci-cd, devops, containerization, cloud-native
+
+#### **Auto Command Examples:**
+
+```bash
+# Basic auto-detection for all configured tools
+rules4 auto
+
+# Tool-specific auto-generation  
+rules4 auto cursor
+rules4 auto claude
+
+# Auto-detection with research and review
+rules4 auto --research --review claude-3-5-sonnet-20241022
+
+# Override auto-detected language but keep detected frameworks
+rules4 auto --lang typescript
+
+# Override auto-detected tags but keep detected language
+rules4 auto --tags "performance,security,testing"
+
+# Combination with all features
+rules4 auto cursor --primary gpt-4-turbo --research --dry-run
+```
+
+#### **How It Works:**
+
+1. **🔍 Scans** your project directory structure
+2. **🎯 Detects** programming languages from file extensions and content
+3. **📦 Analyzes** package files (package.json, requirements.txt, etc.)
+4. **🛠️ Identifies** frameworks and build tools
+5. **🏷️ Generates** intelligent tags based on project characteristics
+6. **⚡ Executes** the same high-quality generation pipeline as manual commands
+
 ### Generating Rules for All Configured Tools
 
 If you have a `.rules4rc` file configured (created with `rules4 init`), you can generate rules for all specified tools:
@@ -135,7 +214,7 @@ This command will:
 - Read the list of tools from your `.rules4rc` file.
 - Generate rules for each tool, focusing on `code style` for Go projects.
 
-**Note**: The `generate` command requires a `.rules4rc` configuration file. Individual tool commands (like `rules4 cursor`, `rules4 claude`) work without any configuration.
+**Note**: The `generate` command requires a `.rules4rc` configuration file. Individual tool commands (like `rules4 cursor`, `rules4 claude`) and the `auto` command work without any configuration.
 
 ### Command-Line Options
 
