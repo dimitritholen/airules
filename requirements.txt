@@ -7,3 +7,9 @@ typer[all]
 rich
 
 trio
+
+# Linting and formatting tools
+flake8
+black
+mypy
+isort
