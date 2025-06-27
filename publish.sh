@@ -80,23 +80,23 @@ check_venv() {
 # Check if required tools are installed
 check_dependencies() {
     print_status "Checking dependencies..."
-    
+
     local missing_deps=()
-    
+
     if ! python -c "import build" 2>/dev/null; then
         missing_deps+=("build")
     fi
-    
+
     if ! python -c "import twine" 2>/dev/null; then
         missing_deps+=("twine")
     fi
-    
+
     if [[ ${#missing_deps[@]} -gt 0 ]]; then
         print_error "Missing dependencies: ${missing_deps[*]}"
         echo "Install them with: pip install ${missing_deps[*]}"
         exit 1
     fi
-    
+
     print_success "All dependencies are installed"
 }
 
@@ -108,7 +108,7 @@ check_api_token() {
     else
         token_var="PYPI_API_TOKEN"
     fi
-    
+
     if [[ -z "${!token_var:-}" ]]; then
         print_error "Missing API token environment variable: $token_var"
         if [[ "$PUBLISH_TO_TEST_PYPI" == true ]]; then
@@ -127,7 +127,7 @@ check_api_token() {
 update_version() {
     if [[ -n "$NEW_VERSION" ]]; then
         print_status "Updating version to $NEW_VERSION..."
-        
+
         # Update version in pyproject.toml
         if [[ "$OSTYPE" == "darwin"* ]]; then
             # macOS
@@ -136,7 +136,7 @@ update_version() {
             # Linux
             sed -i "s/version = \".*\"/version = \"$NEW_VERSION\"/" pyproject.toml
         fi
-        
+
         # Update version in cli.py
         if [[ "$OSTYPE" == "darwin"* ]]; then
             # macOS
@@ -145,9 +145,9 @@ update_version() {
             # Linux
             sed -i "s/__version__ = \".*\"/__version__ = \"$NEW_VERSION\"/" airules/cli.py
         fi
-        
+
         print_success "Version updated to $NEW_VERSION"
-        
+
         # Show the changes
         echo "Changes made:"
         git diff pyproject.toml airules/cli.py || true
@@ -185,7 +185,7 @@ cleanup() {
 build_package() {
     print_status "Building distribution packages..."
     python -m build
-    
+
     # List built files
     print_success "Built packages:"
     ls -la dist/
@@ -204,10 +204,10 @@ upload_package() {
         print_warning "DRY RUN: Would upload packages but --dry-run specified"
         return
     fi
-    
+
     local upload_args=()
     local repository_name
-    
+
     if [[ "$PUBLISH_TO_TEST_PYPI" == true ]]; then
         repository_name="TestPyPI"
         upload_args+=(--repository testpypi)
@@ -219,12 +219,12 @@ upload_package() {
         upload_args+=(--username __token__)
         upload_args+=(--password "$PYPI_API_TOKEN")
     fi
-    
+
     print_status "Uploading to $repository_name..."
     python -m twine upload "${upload_args[@]}" dist/*
-    
+
     print_success "Successfully published to $repository_name!"
-    
+
     # Show installation instructions
     local package_name="rules4"
     if [[ "$PUBLISH_TO_TEST_PYPI" == true ]]; then
@@ -241,25 +241,25 @@ upload_package() {
 # Main execution
 main() {
     print_status "Starting publication process..."
-    
+
     # Pre-flight checks
     check_venv
     check_dependencies
     check_api_token
-    
+
     # Update version if requested
     update_version
-    
+
     # Quality checks
     run_tests
     run_linting
-    
+
     # Build and publish
     cleanup
     build_package
     check_package
     upload_package
-    
+
     print_success "Publication complete! 🎉"
 }
 

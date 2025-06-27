@@ -1,6 +1,5 @@
 """Refactored CLI for airules - follows industry best practices."""
 
-from pathlib import Path
 from typing import Optional
 
 import typer
@@ -19,7 +18,7 @@ from .ui import ConsoleManager
 clean_rules_content = ContentProcessor.clean_rules_content
 
 
-__version__ = "1.0.0"
+__version__ = "1.2.3"
 
 # Initialize shared dependencies
 console_manager = ConsoleManager()
@@ -293,73 +292,3 @@ def auto(
 
 if __name__ == "__main__":
     app()
-
-
-# Import original implementations for backwards compatibility with tests
-# This allows tests to continue working while we have the new refactored code
-try:
-    from .cli_old import (
-        generate_rules,
-        research_with_perplexity,
-        run_generation_pipeline,
-        validate_rules,
-        write_rules_file,
-    )
-except ImportError:
-    # Fallback implementations if old file doesn't exist
-    def run_generation_pipeline(
-        tool: str,
-        primary_model: str,
-        research: bool,
-        review_model: Optional[str],
-        dry_run: bool,
-        yes: bool,
-        project_path: str,
-        lang: Optional[str] = None,
-        tags: Optional[str] = None,
-    ):
-        """Compatibility wrapper for tests."""
-        tool_handler.execute(
-            tool=tool,
-            primary=primary_model,
-            review=review_model,
-            research=research,
-            lang=lang,
-            tags=tags,
-            dry_run=dry_run,
-            yes=yes,
-            project_path=project_path,
-        )
-
-    def write_rules_file(
-        filepath: Path, content: str, dry_run: bool, yes: bool, tool: str
-    ):
-        """Compatibility wrapper for tests."""
-        file_manager.write_rules_file(filepath, content, dry_run, yes, tool)
-
-    def generate_rules(
-        lang: str,
-        tool: str,
-        tag: str,
-        model: str,
-        research_summary: Optional[str] = None,
-    ) -> str:
-        """Compatibility wrapper for tests."""
-        from .services import RulesGeneratorService
-
-        generator = RulesGeneratorService()
-        return generator.generate_rules(lang, tool, tag, model, research_summary)
-
-    def validate_rules(content: str, review_model: str) -> str:
-        """Compatibility wrapper for tests."""
-        from .services import RulesGeneratorService
-
-        generator = RulesGeneratorService()
-        return generator.validate_rules(content, review_model)
-
-    def research_with_perplexity(lang: str, tag: str) -> str:
-        """Compatibility wrapper for tests."""
-        from .services import ResearchService
-
-        research = ResearchService()
-        return research.research_topic(lang, tag)

@@ -302,7 +302,7 @@ class TestAutoCommand:
             result = runner.invoke(app, ["auto", "unsupported-tool", "--dry-run"])
 
             assert result.exit_code == 1
-            assert "Unsupported tool: unsupported-tool" in result.stderr
+            assert "Unsupported tool: unsupported-tool" in result.output
 
     def test_auto_command_javascript_project(
         self, javascript_project_structure, mock_api_clients

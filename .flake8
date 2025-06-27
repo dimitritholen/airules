@@ -1,13 +1,13 @@
 [flake8]
 max-line-length = 88
-extend-ignore = 
+extend-ignore =
     # E203: whitespace before ':' (conflicts with black)
     E203,
     # W503: line break before binary operator (conflicts with black)
     W503,
     # E501: line too long (handled by black)
     E501
-exclude = 
+exclude =
     .git,
     __pycache__,
     .pytest_cache,
@@ -21,4 +21,4 @@ per-file-ignores =
     # Allow unused imports in __init__.py files
     __init__.py:F401
     # Allow star imports in test files
-    tests/*:F401,F403,F405 
+    tests/*:F401,F403,F405

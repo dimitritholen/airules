@@ -154,16 +154,19 @@ The auto command is the smartest way to generate rules. It analyzes your project
 #### **What It Detects:**
 
 **Languages (50+):**
+
 - Python, JavaScript, TypeScript, Java, Go, Rust, C#, PHP, Ruby, C++, Swift, Kotlin, Dart, Elixir, Scala, Clojure, Haskell, R, Julia, and more...
 
 **Frameworks & Libraries (50+):**
+
 - **Frontend**: React, Vue, Angular, Svelte, Next.js, Nuxt.js
-- **Backend**: Django, Flask, FastAPI, Express, Spring Boot, ASP.NET, Laravel  
+- **Backend**: Django, Flask, FastAPI, Express, Spring Boot, ASP.NET, Laravel
 - **Mobile**: React Native, Flutter, Ionic, Xamarin
 - **Testing**: Jest, pytest, Mocha, Cypress, Selenium
 - **Build Tools**: webpack, Vite, Rollup, Parcel, Cargo, Maven, Gradle
 
 **Smart Tags Generated:**
+
 - **Architecture**: microservices, monolith, serverless, api
 - **Development**: testing, security, performance, documentation
 - **Technologies**: database, web-development, mobile, machine-learning
@@ -175,7 +178,7 @@ The auto command is the smartest way to generate rules. It analyzes your project
 # Basic auto-detection for all configured tools
 rules4 auto
 
-# Tool-specific auto-generation  
+# Tool-specific auto-generation
 rules4 auto cursor
 rules4 auto claude
 

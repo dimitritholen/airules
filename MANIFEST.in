@@ -6,4 +6,4 @@ include Makefile
 recursive-include airules *.py
 recursive-include tests *.py
 global-exclude __pycache__ *.pyc *.pyo *.pyd .DS_Store
-global-exclude .git* .coverage .pytest_cache .mypy_cache 
+global-exclude .git* .coverage .pytest_cache .mypy_cache

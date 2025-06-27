@@ -1,6 +1,6 @@
 # Makefile for airules CLI
 
-.PHONY: venv install test test-integration test-performance test-error-handling test-coverage test-all lint lint-check lint-fix format type-check publish publish-test clean
+.PHONY: venv install test test-integration test-performance test-error-handling test-coverage test-all lint lint-check lint-fix format type-check security-check publish publish-test clean
 
 venv:
 	python3 -m venv .venv
@@ -33,8 +33,8 @@ test-coverage:
 test-all:
 	. .venv/bin/activate && PYTHONPATH=. pytest --cov=airules --cov-report=html --cov-report=term-missing --cov-fail-under=90 --benchmark-skip
 
-# Comprehensive linting
-lint: lint-check type-check
+# Comprehensive linting including security checks
+lint: lint-check type-check security-check
 	@echo "✅ All linting checks passed!"
 
 # Check code style without fixing
@@ -60,6 +60,11 @@ format:
 type-check:
 	@echo "🔍 Running type checks..."
 	. .venv/bin/activate && mypy airules
+
+# Security scanning
+security-check:
+	@echo "🔒 Running security checks..."
+	. .venv/bin/activate && bandit -r airules -ll --exit-zero
 
 # Publishing
 publish:

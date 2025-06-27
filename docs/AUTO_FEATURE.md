@@ -63,6 +63,7 @@ The auto feature detects Python projects by looking for:
 - `environment.yml` (conda)
 
 **Supported Frameworks:**
+
 - Flask
 - Django
 - FastAPI
@@ -72,6 +73,7 @@ The auto feature detects Python projects by looking for:
 - Flake8 (linting)
 
 **Example Output:**
+
 ```markdown
 # Auto-Generated Python Rules
 
@@ -99,6 +101,7 @@ The auto feature detects JavaScript/TypeScript projects by looking for:
 - `jsconfig.json`
 
 **Supported Frameworks:**
+
 - React
 - Next.js
 - Vue.js
@@ -110,6 +113,7 @@ The auto feature detects JavaScript/TypeScript projects by looking for:
 - Prettier (formatting)
 
 **Example Output:**
+
 ```markdown
 # Auto-Generated React/TypeScript Rules
 
@@ -134,12 +138,14 @@ The auto feature detects Rust projects by looking for:
 - `Cargo.lock`
 
 **Supported Features:**
+
 - Serde for serialization
 - Tokio for async runtime
 - Clap for CLI parsing
 - Reqwest for HTTP client
 
 **Example Output:**
+
 ```markdown
 # Auto-Generated Rust Rules
 
@@ -268,16 +274,19 @@ The auto feature handles various error conditions gracefully:
 The auto feature integrates with multiple AI services:
 
 ### OpenAI Integration
+
 - Used for primary rule generation
 - Supports GPT-4 and GPT-3.5-turbo models
 - Handles rate limiting and retries
 
 ### Anthropic Integration
+
 - Used for rule validation and improvement
 - Supports Claude-3 models
 - Optional enhancement step
 
 ### Perplexity Integration
+
 - Used for research and context gathering
 - Provides up-to-date framework information
 - Optional research step
@@ -287,6 +296,7 @@ The auto feature integrates with multiple AI services:
 ### Common Issues
 
 **Framework not detected:**
+
 ```bash
 # Override detection
 rules4 auto --lang python --tags "flask,web,api"
@@ -296,12 +306,14 @@ rules4 auto --dry-run --verbose
 ```
 
 **API rate limits:**
+
 ```bash
 # Use different models or reduce frequency
 rules4 auto --primary gpt-3.5-turbo
 ```
 
 **Permission errors:**
+
 ```bash
 # Check directory permissions
 ls -la /path/to/project
@@ -311,6 +323,7 @@ rules4 auto --project-path /accessible/path
 ```
 
 **Slow analysis:**
+
 ```bash
 # Limit analysis depth
 rules4 auto --max-depth 5
@@ -342,6 +355,7 @@ rules4 auto --research --review claude-3-sonnet-20240229
 ```
 
 **Generated files:**
+
 - `.cursor/rules/python.mdc`
 - `.cursor/rules/web.mdc`
 - `.cursor/rules/testing.mdc`
@@ -355,6 +369,7 @@ rules4 auto --tools cursor,copilot
 ```
 
 **Generated files:**
+
 - `.cursor/rules/javascript.mdc`
 - `.cursor/rules/react.mdc`
 - `.github/copilot-javascript-react.md`
@@ -367,6 +382,7 @@ rules4 auto --research
 ```
 
 **Detected components:**
+
 - Backend: Python FastAPI
 - Frontend: Next.js TypeScript
 - Mobile: React Native

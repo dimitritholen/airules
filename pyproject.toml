@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rules4"
-version = "1.2.0"
+version = "1.2.3"
 authors = [
   { name="Dimitri Tholen", email="scriptdude@gmail.com" },
 ]
@@ -92,7 +92,7 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
-    "--cov-fail-under=19",
+    "--cov-fail-under=80",
     "--maxfail=1",
     "--disable-warnings",
 ]
@@ -118,7 +118,6 @@ omit = [
     "*/tests/*",
     "*/test_*.py",
     "*/__init__.py",
-    "*/cli_old.py",  # Legacy file
 ]
 branch = true
 
