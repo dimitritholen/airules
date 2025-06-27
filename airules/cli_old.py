@@ -672,9 +672,7 @@ def generate(
         tools = [tool.strip() for tool in tools_str.split(",")]
 
         console.print(
-            f"[bold blue]Generating rules for {
-                len(tools)} tool(s): {
-                ', '.join(tools)}[/bold blue]"
+            f"[bold blue]Generating rules for {len(tools)} tool(s): {', '.join(tools)}[/bold blue]"
         )
 
         for tool in tools:
